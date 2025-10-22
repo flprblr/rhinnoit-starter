@@ -20,7 +20,7 @@
     "require-dev": {
         "fakerphp/faker": "^1.23",
         "laravel/pail": "^1.2.2",
-        "laravel/pint": "^1.18",
+        "laravel/pint": "^1.25",
         "laravel/sail": "^1.41",
         "laravel/telescope": "^5.14",
         "mockery/mockery": "^1.6",
@@ -79,7 +79,8 @@
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
-        ]
+        ],
+        "pint": "./vendor/bin/pint"
     },
     "extra": {
         "laravel": {
