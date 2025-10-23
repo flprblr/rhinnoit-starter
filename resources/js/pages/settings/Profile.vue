@@ -98,6 +98,35 @@ const user = page.props.auth.user;
                         </div>
                     </div>
 
+                    <div class="grid gap-2">
+                        <Label for="dni">DNI</Label>
+                        <Input
+                            id="dni"
+                            name="dni"
+                            class="mt-1 block w-full"
+                            :default-value="user.dni ?? ''"
+                            required
+                            autocomplete="off"
+                            placeholder="DNI"
+                        />
+                        <InputError class="mt-2" :message="errors.dni" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="phone">Phone</Label>
+                        <Input
+                            id="phone"
+                            name="phone"
+                            type="tel"
+                            class="mt-1 block w-full"
+                            :default-value="user.phone ?? ''"
+                            required
+                            autocomplete="tel"
+                            placeholder="Phone"
+                        />
+                        <InputError class="mt-2" :message="errors.phone" />
+                    </div>
+
                     <div class="flex items-center gap-4">
                         <Button
                             :disabled="processing"
