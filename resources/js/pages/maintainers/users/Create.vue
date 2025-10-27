@@ -15,6 +15,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import HeadingSmall from '@/components/HeadingSmall.vue';
+import {
+    store as storeUser,
+    index as usersIndex,
+} from '@/routes/maintainers/users';
 
 interface Role {
     id: number | string;
@@ -29,11 +33,11 @@ const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Create User',
         description: 'Create a user using the form below.',
-        href: '/maintainers/users',
+        href: usersIndex().url,
     },
 ];
 
-const form = useForm('post', route('maintainers.users.store'), {
+const form = useForm('post', storeUser().url, {
     name: '',
     email: '',
     password: '',
@@ -41,7 +45,7 @@ const form = useForm('post', route('maintainers.users.store'), {
 });
 
 const submit = () => {
-    form.post(route('maintainers.users.store'), {
+    form.post(storeUser().url, {
         preserveUrl: true,
         preserveScroll: true,
         preserveState: true,
@@ -69,34 +73,66 @@ useFlashWatcher();
         <Head :title="breadcrumbs[0].title" />
 
         <div class="max-w-xl space-y-3 p-4">
-            <HeadingSmall :title="breadcrumbs[0].title" :description="breadcrumbs[0].description" />
+            <HeadingSmall
+                :title="breadcrumbs[0].title"
+                :description="breadcrumbs[0].description"
+            />
             <form @submit.prevent="submit" class="space-y-6">
                 <div class="grid gap-2">
                     <Label for="name">Name</Label>
-                    <Input id="name" v-model="form.name" @change="form.validate('name')" type="text" class="mt-1 block w-full" />
+                    <Input
+                        id="name"
+                        v-model="form.name"
+                        @change="form.validate('name')"
+                        type="text"
+                        class="mt-1 block w-full"
+                    />
                     <InputError :message="form.errors.name" />
                 </div>
                 <div class="grid gap-2">
                     <Label for="email">Email</Label>
-                    <Input id="email" v-model="form.email" @change="form.validate('email')" type="email" class="mt-1 block w-full" />
+                    <Input
+                        id="email"
+                        v-model="form.email"
+                        @change="form.validate('email')"
+                        type="email"
+                        class="mt-1 block w-full"
+                    />
                     <InputError :message="form.errors.email" />
                 </div>
                 <div class="grid gap-2">
                     <Label for="password">Password</Label>
-                    <Input id="password" v-model="form.password" @change="form.validate('password')" type="password" class="mt-1 block w-full" />
+                    <Input
+                        id="password"
+                        v-model="form.password"
+                        @change="form.validate('password')"
+                        type="password"
+                        class="mt-1 block w-full"
+                    />
                     <InputError :message="form.errors.password" />
                 </div>
 
                 <div class="grid gap-2">
                     <Label>Roles</Label>
-                    <div class="grid grid-cols-1 gap-3 rounded-lg border p-4 md:grid-cols-2 lg:grid-cols-3">
-                        <div v-for="role in props.roles" :key="role.id" class="flex items-center space-x-2">
+                    <div
+                        class="grid grid-cols-1 gap-3 rounded-lg border p-4 md:grid-cols-2 lg:grid-cols-3"
+                    >
+                        <div
+                            v-for="role in props.roles"
+                            :key="role.id"
+                            class="flex items-center space-x-2"
+                        >
                             <Checkbox
                                 :id="`role-${role.id}`"
-                                :model-value="form.roles.includes(Number(role.id))"
+                                :model-value="
+                                    form.roles.includes(Number(role.id))
+                                "
                                 @update:model-value="toggleRole(role.id)"
                             />
-                            <Label :for="`role-${role.id}`" class="text-sm font-normal">
+                            <Label
+                                :for="`role-${role.id}`"
+                                class="text-sm font-normal"
+                            >
                                 {{ role.name }}
                             </Label>
                         </div>
@@ -105,8 +141,12 @@ useFlashWatcher();
                 </div>
 
                 <div class="flex items-center gap-4">
-                    <Button :disabled="form.processing" class="cursor-pointer">Create</Button>
-                    <Link :href="route('maintainers.users.index')" class="text-sm underline"> Back to list </Link>
+                    <Button :disabled="form.processing" class="cursor-pointer"
+                        >Create</Button
+                    >
+                    <Link :href="usersIndex().url" class="text-sm underline">
+                        Back to list
+                    </Link>
                 </div>
             </form>
         </div>

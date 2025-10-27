@@ -12,16 +12,18 @@ import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { index as permissionsIndex } from '@/routes/maintainers/permissions';
+import { form as importPermissionsForm } from '@/routes/maintainers/permissions/import';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Import Permissions',
         description: 'Import permissions using the form below.',
-        href: '/maintainers/permissions',
+        href: permissionsIndex().url,
     },
 ];
 
-const form = useForm('post', route('maintainers.permissions.import'), {
+const form = useForm('post', importPermissionsForm().url, {
     file: null as File | null,
 });
 
@@ -35,7 +37,7 @@ const onFileChange = (e: Event) => {
 };
 
 const submit = () => {
-    form.post(route('maintainers.permissions.import'), {
+    form.post(importPermissionsForm().url, {
         forceFormData: true,
         preserveUrl: true,
         preserveScroll: true,
@@ -53,20 +55,36 @@ useFlashWatcher();
         <Head :title="breadcrumbs[0].title" />
 
         <div class="max-w-xl space-y-3 p-4">
-            <HeadingSmall :title="breadcrumbs[0].title" :description="breadcrumbs[0].description" />
+            <HeadingSmall
+                :title="breadcrumbs[0].title"
+                :description="breadcrumbs[0].description"
+            />
 
             <form @submit.prevent="submit" class="space-y-6">
                 <div class="grid gap-2">
                     <Label for="file">File</Label>
-                    <Input id="file" type="file" accept=".xlsx" class="mt-1 block w-full" @change="onFileChange" />
+                    <Input
+                        id="file"
+                        type="file"
+                        accept=".xlsx"
+                        class="mt-1 block w-full"
+                        @change="onFileChange"
+                    />
                     <InputError :message="form.errors.file" />
                 </div>
                 <!-- <div class="flex items-center gap-4">
                         <Button :disabled="form.processing" class="cursor-pointer">Import</Button>
                     </div> -->
                 <div class="flex items-center gap-4">
-                    <Button :disabled="form.processing" class="cursor-pointer">Import</Button>
-                    <Link :href="route('maintainers.permissions.index')" class="text-sm underline"> Back to list </Link>
+                    <Button :disabled="form.processing" class="cursor-pointer"
+                        >Import</Button
+                    >
+                    <Link
+                        :href="permissionsIndex().url"
+                        class="text-sm underline"
+                    >
+                        Back to list
+                    </Link>
                 </div>
             </form>
         </div>

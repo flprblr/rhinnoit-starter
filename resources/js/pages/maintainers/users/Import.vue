@@ -12,16 +12,18 @@ import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { index as usersIndex } from '@/routes/maintainers/users';
+import { form as importUsersForm } from '@/routes/maintainers/users/import';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Import Users',
         description: 'Import users using the form below.',
-        href: '/maintainers/users',
+        href: usersIndex().url,
     },
 ];
 
-const form = useForm('post', route('maintainers.users.import'), {
+const form = useForm('post', importUsersForm().url, {
     file: null as File | null,
 });
 
@@ -35,7 +37,7 @@ const onFileChange = (e: Event) => {
 };
 
 const submit = () => {
-    form.post(route('maintainers.users.import'), {
+    form.post(importUsersForm().url, {
         forceFormData: true,
         preserveUrl: true,
         preserveScroll: true,
@@ -53,20 +55,33 @@ useFlashWatcher();
         <Head :title="breadcrumbs[0].title" />
 
         <div class="max-w-xl space-y-3 p-4">
-            <HeadingSmall :title="breadcrumbs[0].title" :description="breadcrumbs[0].description" />
+            <HeadingSmall
+                :title="breadcrumbs[0].title"
+                :description="breadcrumbs[0].description"
+            />
 
             <form @submit.prevent="submit" class="space-y-6">
                 <div class="grid gap-2">
                     <Label for="file">File</Label>
-                    <Input id="file" type="file" accept=".xlsx" class="mt-1 block w-full" @change="onFileChange" />
+                    <Input
+                        id="file"
+                        type="file"
+                        accept=".xlsx"
+                        class="mt-1 block w-full"
+                        @change="onFileChange"
+                    />
                     <InputError :message="form.errors.file" />
                 </div>
                 <!-- <div class="flex items-center gap-4">
                         <Button :disabled="form.processing" class="cursor-pointer">Import</Button>
                     </div> -->
                 <div class="flex items-center gap-4">
-                    <Button :disabled="form.processing" class="cursor-pointer">Import</Button>
-                    <Link :href="route('maintainers.users.index')" class="text-sm underline"> Back to list </Link>
+                    <Button :disabled="form.processing" class="cursor-pointer"
+                        >Import</Button
+                    >
+                    <Link :href="usersIndex().url" class="text-sm underline">
+                        Back to list
+                    </Link>
                 </div>
             </form>
         </div>
