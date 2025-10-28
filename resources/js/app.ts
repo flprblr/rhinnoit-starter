@@ -12,11 +12,7 @@ const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
-    resolve: (name) =>
-        resolvePageComponent(
-            `./pages/${name}.vue`,
-            import.meta.glob<DefineComponent>('./pages/**/*.vue'),
-        ),
+    resolve: (name) => resolvePageComponent(`./pages/${name}.vue`, import.meta.glob<DefineComponent>('./pages/**/*.vue')),
     setup({ el, App, props, plugin }) {
         const app = createApp({ render: () => h(App, props) }) as VueApp;
         // Provide global $can helper and v-can directive
@@ -28,17 +24,13 @@ createInertiaApp({
                 // store original display
                 const original = (el as HTMLElement).style.display || '';
                 (el as any).__vcan_display = original;
-                (el as HTMLElement).style.display = can(required)
-                    ? original
-                    : 'none';
+                (el as HTMLElement).style.display = can(required) ? original : 'none';
             },
             updated(el, binding) {
                 const can = createCan();
                 const required = binding.value as string | string[];
                 const original = (el as any).__vcan_display ?? '';
-                (el as HTMLElement).style.display = can(required)
-                    ? original
-                    : 'none';
+                (el as HTMLElement).style.display = can(required) ? original : 'none';
             },
         });
 

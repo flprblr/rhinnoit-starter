@@ -26,9 +26,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <div
-        class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
-    >
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <HeadingSmall :title="props.title" :description="props.description" />
         <div class="flex gap-2">
             <Button
@@ -36,8 +34,7 @@ const emit = defineEmits<{
                 variant="outline"
                 class="cursor-pointer"
                 v-can="`${props.resource}.create`"
-                @click="emit('create')"
-            >
+                @click="emit('create')">
                 <Plus class="mr-2 h-4 w-4" />
                 Create
             </Button>
@@ -47,8 +44,7 @@ const emit = defineEmits<{
                 variant="outline"
                 class="cursor-pointer"
                 v-can="`${props.resource}.export`"
-                @click="emit('export')"
-            >
+                @click="emit('export')">
                 <Download class="mr-2 h-4 w-4" />
                 Export
             </Button>
@@ -58,8 +54,7 @@ const emit = defineEmits<{
                 variant="outline"
                 class="cursor-pointer"
                 v-can="`${props.resource}.import`"
-                @click="emit('import')"
-            >
+                @click="emit('import')">
                 <Upload class="mr-2 h-4 w-4" />
                 Import
             </Button>

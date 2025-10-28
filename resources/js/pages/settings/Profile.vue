@@ -38,16 +38,9 @@ const user = page.props.auth.user;
 
         <SettingsLayout>
             <div class="flex flex-col space-y-6">
-                <HeadingSmall
-                    title="Profile information"
-                    description="Update your name and email address"
-                />
+                <HeadingSmall title="Profile information" description="Update your name and email address" />
 
-                <Form
-                    v-bind="ProfileController.update.form()"
-                    class="space-y-6"
-                    v-slot="{ errors, processing, recentlySuccessful }"
-                >
+                <Form v-bind="ProfileController.update.form()" class="space-y-6" v-slot="{ errors, processing, recentlySuccessful }">
                     <div class="grid gap-2">
                         <Label for="name">Name</Label>
                         <Input
@@ -57,8 +50,7 @@ const user = page.props.auth.user;
                             :default-value="user.name"
                             required
                             autocomplete="name"
-                            placeholder="Full name"
-                        />
+                            placeholder="Full name" />
                         <InputError class="mt-2" :message="errors.name" />
                     </div>
 
@@ -72,8 +64,7 @@ const user = page.props.auth.user;
                             :default-value="user.email"
                             required
                             autocomplete="username"
-                            placeholder="Email address"
-                        />
+                            placeholder="Email address" />
                         <InputError class="mt-2" :message="errors.email" />
                     </div>
 
@@ -83,18 +74,13 @@ const user = page.props.auth.user;
                             <Link
                                 :href="send()"
                                 as="button"
-                                class="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
-                            >
+                                class="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500">
                                 Click here to resend the verification email.
                             </Link>
                         </p>
 
-                        <div
-                            v-if="status === 'verification-link-sent'"
-                            class="mt-2 text-sm font-medium text-green-600"
-                        >
-                            A new verification link has been sent to your email
-                            address.
+                        <div v-if="status === 'verification-link-sent'" class="mt-2 text-sm font-medium text-green-600">
+                            A new verification link has been sent to your email address.
                         </div>
                     </div>
 
@@ -107,8 +93,7 @@ const user = page.props.auth.user;
                             :default-value="user.dni ?? ''"
                             required
                             autocomplete="off"
-                            placeholder="DNI"
-                        />
+                            placeholder="DNI" />
                         <InputError class="mt-2" :message="errors.dni" />
                     </div>
 
@@ -122,30 +107,19 @@ const user = page.props.auth.user;
                             :default-value="user.phone ?? ''"
                             required
                             autocomplete="tel"
-                            placeholder="Phone"
-                        />
+                            placeholder="Phone" />
                         <InputError class="mt-2" :message="errors.phone" />
                     </div>
 
                     <div class="flex items-center gap-4">
-                        <Button
-                            :disabled="processing"
-                            data-test="update-profile-button"
-                            >Save</Button
-                        >
+                        <Button :disabled="processing" data-test="update-profile-button">Save</Button>
 
                         <Transition
                             enter-active-class="transition ease-in-out"
                             enter-from-class="opacity-0"
                             leave-active-class="transition ease-in-out"
-                            leave-to-class="opacity-0"
-                        >
-                            <p
-                                v-show="recentlySuccessful"
-                                class="text-sm text-neutral-600"
-                            >
-                                Saved.
-                            </p>
+                            leave-to-class="opacity-0">
+                            <p v-show="recentlySuccessful" class="text-sm text-neutral-600">Saved.</p>
                         </Transition>
                     </div>
                 </Form>

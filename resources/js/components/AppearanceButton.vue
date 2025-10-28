@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAppearance } from '@/composables/useAppearance';
 import { Monitor, Moon, Sun } from 'lucide-vue-next';
 
@@ -21,9 +16,7 @@ const getCurrentIcon = () => {
     // Si el tema es 'system', necesitamos detectar el tema real del sistema
     if (appearance.value === 'system') {
         if (typeof window !== 'undefined') {
-            const mediaQuery = window.matchMedia(
-                '(prefers-color-scheme: dark)',
-            );
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
             return mediaQuery.matches ? Moon : Sun;
         }
         return Sun; // fallback por defecto
@@ -37,11 +30,7 @@ const getCurrentIcon = () => {
 <template>
     <DropdownMenu>
         <DropdownMenuTrigger as-child>
-            <Button
-                variant="ghost"
-                size="icon"
-                class="cursor-pointer transition-colors"
-            >
+            <Button variant="ghost" size="icon" class="cursor-pointer transition-colors">
                 <component :is="getCurrentIcon()" class="h-5 w-5" />
             </Button>
         </DropdownMenuTrigger>
@@ -49,11 +38,8 @@ const getCurrentIcon = () => {
             <DropdownMenuItem
                 v-for="theme in themes"
                 :key="theme.value"
-                @click="
-                    updateAppearance(theme.value as 'light' | 'dark' | 'system')
-                "
-                class="cursor-pointer"
-            >
+                @click="updateAppearance(theme.value as 'light' | 'dark' | 'system')"
+                class="cursor-pointer">
                 <component :is="theme.icon" class="mr-2 h-4 w-4" />
                 {{ theme.label }}
             </DropdownMenuItem>

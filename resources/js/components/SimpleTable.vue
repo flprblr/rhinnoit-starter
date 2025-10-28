@@ -11,22 +11,8 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import {
-    Pagination,
-    PaginationContent,
-    PaginationEllipsis,
-    PaginationItem,
-    PaginationNext,
-    PaginationPrevious,
-} from '@/components/ui/pagination';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { RowAction, TableColumn } from '@/types';
 import { ref } from 'vue';
 
@@ -69,18 +55,12 @@ const pendingAction = ref<{
     item: Record<string, unknown>;
 } | null>(null);
 
-const getCellValue = (
-    item: Record<string, unknown>,
-    field: string | number | symbol,
-) => {
+const getCellValue = (item: Record<string, unknown>, field: string | number | symbol) => {
     const key = String(field);
     return (item as Record<string, unknown>)[key];
 };
 
-const handleActionClick = (
-    action: RowAction,
-    item: Record<string, unknown>,
-) => {
+const handleActionClick = (action: RowAction, item: Record<string, unknown>) => {
     if (action.confirm) {
         pendingAction.value = { action, item };
         isConfirmOpen.value = true;
@@ -88,9 +68,7 @@ const handleActionClick = (
     }
     emit('row:action', {
         key: action.key,
-        id: (item as Record<string, unknown>)[props.rowKey as string] as
-            | string
-            | number,
+        id: (item as Record<string, unknown>)[props.rowKey as string] as string | number,
         item,
     });
 };
@@ -98,9 +76,7 @@ const handleActionClick = (
 const confirmAction = () => {
     if (pendingAction.value) {
         const { action, item } = pendingAction.value;
-        const id = (item as Record<string, unknown>)[props.rowKey as string] as
-            | string
-            | number;
+        const id = (item as Record<string, unknown>)[props.rowKey as string] as string | number;
         emit('row:action', { key: action.key, id, item });
     }
     isConfirmOpen.value = false;
@@ -122,50 +98,20 @@ defineSlots<{
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead
-                        v-for="col in props.columns"
-                        :key="String(col.field)"
-                        :class="col.class"
-                        >{{ col.label }}</TableHead
-                    >
-                    <TableHead
-                        v-if="
-                            props.showActions &&
-                            (props.actionsLabel ||
-                                (props.rowActions && props.rowActions.length))
-                        "
-                        class="text-right"
-                    >
+                    <TableHead v-for="col in props.columns" :key="String(col.field)" :class="col.class">
+                        {{ col.label }}
+                    </TableHead>
+                    <TableHead v-if="props.showActions && (props.actionsLabel || (props.rowActions && props.rowActions.length))" class="text-right">
                         {{ props.actionsLabel ?? 'Action' }}
                     </TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
-                <TableRow
-                    v-for="item in props.items"
-                    :key="(item as any)[props.rowKey]"
-                >
-                    <TableCell
-                        v-for="col in props.columns"
-                        :key="String(col.field)"
-                    >
-                        {{
-                            col.formatter
-                                ? col.formatter(
-                                      getCellValue(item, col.field as any),
-                                      item,
-                                  )
-                                : getCellValue(item, col.field as any)
-                        }}
+                <TableRow v-for="item in props.items" :key="(item as any)[props.rowKey]">
+                    <TableCell v-for="col in props.columns" :key="String(col.field)">
+                        {{ col.formatter ? col.formatter(getCellValue(item, col.field as any), item) : getCellValue(item, col.field as any) }}
                     </TableCell>
-                    <TableCell
-                        v-if="
-                            props.showActions &&
-                            props.rowActions &&
-                            props.rowActions.length
-                        "
-                        class="text-right"
-                    >
+                    <TableCell v-if="props.showActions && props.rowActions && props.rowActions.length" class="text-right">
                         <div class="flex items-center justify-end gap-3">
                             <Button
                                 v-for="(action, idx) in props.rowActions"
@@ -174,21 +120,13 @@ defineSlots<{
                                 size="sm"
                                 class="cursor-pointer"
                                 v-can="action.can as any"
-                                @click="handleActionClick(action, item)"
-                            >
-                                <component
-                                    v-if="action.icon"
-                                    :is="action.icon"
-                                    class="mr-1 h-4 w-4"
-                                />
+                                @click="handleActionClick(action, item)">
+                                <component v-if="action.icon" :is="action.icon" class="mr-1 h-4 w-4" />
                                 {{ action.label }}
                             </Button>
                         </div>
                     </TableCell>
-                    <TableCell
-                        v-else-if="props.showActions && props.actionsLabel"
-                        class="text-right"
-                    >
+                    <TableCell v-else-if="props.showActions && props.actionsLabel" class="text-right">
                         <slot name="actions" :item="item" />
                     </TableCell>
                 </TableRow>
@@ -200,23 +138,15 @@ defineSlots<{
             :items-per-page="props.itemsPerPage"
             :total="props.total"
             :default-page="props.currentPage"
-            @update:page="(p) => emit('update:page', p)"
-        >
+            @update:page="(p) => emit('update:page', p)">
             <PaginationContent v-slot="{ items }">
                 <PaginationPrevious />
 
                 <template v-for="(item, index) in items" :key="index">
-                    <PaginationItem
-                        v-if="item.type === 'page'"
-                        :value="item.value"
-                        :is-active="item.value === page"
-                    >
+                    <PaginationItem v-if="item.type === 'page'" :value="item.value" :is-active="item.value === page">
                         {{ item.value }}
                     </PaginationItem>
-                    <PaginationEllipsis
-                        v-else-if="item.type === 'ellipsis'"
-                        :index="index"
-                    />
+                    <PaginationEllipsis v-else-if="item.type === 'ellipsis'" :index="index" />
                 </template>
 
                 <PaginationNext />
@@ -226,27 +156,16 @@ defineSlots<{
         <AlertDialog v-model:open="isConfirmOpen">
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>{{
-                        pendingAction?.action.confirm?.title ?? 'Are you sure?'
-                    }}</AlertDialogTitle>
+                    <AlertDialogTitle>
+                        {{ pendingAction?.action.confirm?.title ?? 'Are you sure?' }}
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
-                        {{
-                            pendingAction?.action.confirm?.description ??
-                            'This action cannot be undone.'
-                        }}
+                        {{ pendingAction?.action.confirm?.description ?? 'This action cannot be undone.' }}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel
-                        @click="cancelAction"
-                        class="cursor-pointer"
-                        >Cancel</AlertDialogCancel
-                    >
-                    <AlertDialogAction
-                        @click="confirmAction"
-                        class="cursor-pointer"
-                        >Confirm</AlertDialogAction
-                    >
+                    <AlertDialogCancel @click="cancelAction" class="cursor-pointer">Cancel</AlertDialogCancel>
+                    <AlertDialogAction @click="confirmAction" class="cursor-pointer">Confirm</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

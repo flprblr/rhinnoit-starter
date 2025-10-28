@@ -13,14 +13,7 @@ import InputError from '@/components/InputError.vue';
 import SimpleTable from '@/components/SimpleTable.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useFlashWatcher } from '@/composables/useFlashWatcher';
@@ -120,9 +113,7 @@ const importForm = useForm('post', importRolesForm().url, {
 
 // Actions
 const onRowAction = ({ key, id }: { key: string; id: number | string }) => {
-    const role = props.roles.data.find(
-        (r: Record<string, unknown>) => Number(r.id as number) === Number(id),
-    ) as RoleRow | undefined;
+    const role = props.roles.data.find((r: Record<string, unknown>) => Number(r.id as number) === Number(id)) as RoleRow | undefined;
 
     if (!role) return;
 
@@ -249,8 +240,7 @@ useFlashWatcher();
                 resource="roles"
                 @create="goCreate"
                 @export="downloadExport"
-                @import="goImport"
-            />
+                @import="goImport" />
 
             <SimpleTable
                 :columns="columns"
@@ -262,8 +252,7 @@ useFlashWatcher();
                 actions-label="Action"
                 :row-actions="rowActions"
                 @row:action="onRowAction"
-                @update:page="onChangePage"
-            />
+                @update:page="onChangePage" />
         </div>
 
         <!-- Create Dialog -->
@@ -271,46 +260,23 @@ useFlashWatcher();
             <DialogContent class="sm:max-w-[600px]">
                 <DialogHeader>
                     <DialogTitle>Create Role</DialogTitle>
-                    <DialogDescription>
-                        Create a new role for the system.
-                    </DialogDescription>
+                    <DialogDescription>Create a new role for the system.</DialogDescription>
                 </DialogHeader>
                 <form @submit.prevent="submitCreate" class="space-y-4">
                     <div class="grid gap-2">
                         <Label for="create-name">Name</Label>
-                        <Input
-                            id="create-name"
-                            v-model="createForm.name"
-                            @change="createForm.validate('name')"
-                            type="text"
-                        />
+                        <Input id="create-name" v-model="createForm.name" @change="createForm.validate('name')" type="text" />
                         <InputError :message="createForm.errors.name" />
                     </div>
                     <div class="grid gap-2">
                         <Label>Permissions</Label>
-                        <div
-                            class="grid grid-cols-1 gap-3 rounded-lg border p-4 md:grid-cols-2 lg:grid-cols-3"
-                        >
-                            <div
-                                v-for="permission in props.permissions"
-                                :key="permission.id"
-                                class="flex items-center space-x-2"
-                            >
+                        <div class="grid grid-cols-1 gap-3 rounded-lg border p-4 md:grid-cols-2 lg:grid-cols-3">
+                            <div v-for="permission in props.permissions" :key="permission.id" class="flex items-center space-x-2">
                                 <Checkbox
                                     :id="`create-permission-${permission.id}`"
-                                    :model-value="
-                                        createForm.permissions.includes(
-                                            Number(permission.id),
-                                        )
-                                    "
-                                    @update:model-value="
-                                        toggleCreatePermission(permission.id)
-                                    "
-                                />
-                                <Label
-                                    :for="`create-permission-${permission.id}`"
-                                    class="text-sm font-normal"
-                                >
+                                    :model-value="createForm.permissions.includes(Number(permission.id))"
+                                    @update:model-value="toggleCreatePermission(permission.id)" />
+                                <Label :for="`create-permission-${permission.id}`" class="text-sm font-normal">
                                     {{ permission.name }}
                                 </Label>
                             </div>
@@ -318,20 +284,8 @@ useFlashWatcher();
                         <InputError :message="createForm.errors.permissions" />
                     </div>
                     <DialogFooter>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            @click="isCreateOpen = false"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="submit"
-                            :disabled="createForm.processing"
-                            class="cursor-pointer"
-                        >
-                            Create
-                        </Button>
+                        <Button type="button" variant="outline" @click="isCreateOpen = false">Cancel</Button>
+                        <Button type="submit" :disabled="createForm.processing" class="cursor-pointer">Create</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
@@ -339,81 +293,38 @@ useFlashWatcher();
 
         <!-- Edit Dialog -->
         <Dialog v-model:open="isEditOpen">
-            <DialogContent
-                class="max-h-[90vh] overflow-y-auto sm:max-w-[600px]"
-            >
+            <DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
                 <DialogHeader>
                     <DialogTitle>Edit Role</DialogTitle>
-                    <DialogDescription>
-                        Update the role information.
-                    </DialogDescription>
+                    <DialogDescription>Update the role information.</DialogDescription>
                 </DialogHeader>
                 <form @submit.prevent="submitEdit" class="space-y-4">
                     <div class="grid gap-2">
                         <Label for="edit-id">ID</Label>
-                        <Input
-                            id="edit-id"
-                            v-model="editForm.id"
-                            type="text"
-                            readonly
-                            disabled
-                        />
+                        <Input id="edit-id" v-model="editForm.id" type="text" readonly disabled />
                     </div>
                     <div class="grid gap-2">
                         <Label for="edit-name">Name</Label>
-                        <Input
-                            id="edit-name"
-                            v-model="editForm.name"
-                            @change="editForm.validate('name')"
-                            type="text"
-                        />
+                        <Input id="edit-name" v-model="editForm.name" @change="editForm.validate('name')" type="text" />
                         <InputError :message="editForm.errors.name" />
                     </div>
                     <div class="grid gap-2" v-if="editForm.created_at">
                         <Label for="edit-created">Created At</Label>
-                        <Input
-                            id="edit-created"
-                            v-model="editForm.created_at"
-                            type="text"
-                            readonly
-                            disabled
-                        />
+                        <Input id="edit-created" v-model="editForm.created_at" type="text" readonly disabled />
                     </div>
                     <div class="grid gap-2" v-if="editForm.updated_at">
                         <Label for="edit-updated">Updated At</Label>
-                        <Input
-                            id="edit-updated"
-                            v-model="editForm.updated_at"
-                            type="text"
-                            readonly
-                            disabled
-                        />
+                        <Input id="edit-updated" v-model="editForm.updated_at" type="text" readonly disabled />
                     </div>
                     <div class="grid gap-2">
                         <Label>Permissions</Label>
-                        <div
-                            class="grid grid-cols-1 gap-3 rounded-lg border p-4 md:grid-cols-2 lg:grid-cols-3"
-                        >
-                            <div
-                                v-for="permission in props.permissions"
-                                :key="permission.id"
-                                class="flex items-center space-x-2"
-                            >
+                        <div class="grid grid-cols-1 gap-3 rounded-lg border p-4 md:grid-cols-2 lg:grid-cols-3">
+                            <div v-for="permission in props.permissions" :key="permission.id" class="flex items-center space-x-2">
                                 <Checkbox
                                     :id="`edit-permission-${permission.id}`"
-                                    :model-value="
-                                        editForm.permissions.includes(
-                                            Number(permission.id),
-                                        )
-                                    "
-                                    @update:model-value="
-                                        toggleEditPermission(permission.id)
-                                    "
-                                />
-                                <Label
-                                    :for="`edit-permission-${permission.id}`"
-                                    class="text-sm font-normal"
-                                >
+                                    :model-value="editForm.permissions.includes(Number(permission.id))"
+                                    @update:model-value="toggleEditPermission(permission.id)" />
+                                <Label :for="`edit-permission-${permission.id}`" class="text-sm font-normal">
                                     {{ permission.name }}
                                 </Label>
                             </div>
@@ -421,20 +332,8 @@ useFlashWatcher();
                         <InputError :message="editForm.errors.permissions" />
                     </div>
                     <DialogFooter>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            @click="isEditOpen = false"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="submit"
-                            :disabled="editForm.processing"
-                            class="cursor-pointer"
-                        >
-                            Update
-                        </Button>
+                        <Button type="button" variant="outline" @click="isEditOpen = false">Cancel</Button>
+                        <Button type="submit" :disabled="editForm.processing" class="cursor-pointer">Update</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
@@ -442,77 +341,37 @@ useFlashWatcher();
 
         <!-- Show Dialog -->
         <Dialog v-model:open="isShowOpen">
-            <DialogContent
-                class="max-h-[90vh] overflow-y-auto sm:max-w-[600px]"
-            >
+            <DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
                 <DialogHeader>
                     <DialogTitle>Role Details</DialogTitle>
-                    <DialogDescription>
-                        View role information.
-                    </DialogDescription>
+                    <DialogDescription>View role information.</DialogDescription>
                 </DialogHeader>
                 <div class="space-y-4" v-if="selectedRole">
                     <div class="grid gap-2">
                         <Label>ID</Label>
-                        <Input
-                            :model-value="selectedRole.id"
-                            type="text"
-                            readonly
-                            disabled
-                        />
+                        <Input :model-value="selectedRole.id" type="text" readonly disabled />
                     </div>
                     <div class="grid gap-2">
                         <Label>Name</Label>
-                        <Input
-                            :model-value="selectedRole.name"
-                            type="text"
-                            readonly
-                            disabled
-                        />
+                        <Input :model-value="selectedRole.name" type="text" readonly disabled />
                     </div>
                     <div class="grid gap-2" v-if="selectedRole.created_at">
                         <Label>Created At</Label>
-                        <Input
-                            :model-value="selectedRole.created_at"
-                            type="text"
-                            readonly
-                            disabled
-                        />
+                        <Input :model-value="selectedRole.created_at" type="text" readonly disabled />
                     </div>
                     <div class="grid gap-2" v-if="selectedRole.updated_at">
                         <Label>Updated At</Label>
-                        <Input
-                            :model-value="selectedRole.updated_at"
-                            type="text"
-                            readonly
-                            disabled
-                        />
+                        <Input :model-value="selectedRole.updated_at" type="text" readonly disabled />
                     </div>
                     <div class="grid gap-2">
                         <Label>Permissions</Label>
-                        <div
-                            class="grid grid-cols-1 gap-3 rounded-lg border p-4 md:grid-cols-2 lg:grid-cols-3"
-                        >
-                            <div
-                                v-for="permission in props.permissions"
-                                :key="permission.id"
-                                class="flex items-center space-x-2"
-                            >
+                        <div class="grid grid-cols-1 gap-3 rounded-lg border p-4 md:grid-cols-2 lg:grid-cols-3">
+                            <div v-for="permission in props.permissions" :key="permission.id" class="flex items-center space-x-2">
                                 <Checkbox
                                     :id="`show-permission-${permission.id}`"
-                                    :model-value="
-                                        selectedRole.permissions?.some(
-                                            (p: any) =>
-                                                Number(p.id) ===
-                                                Number(permission.id),
-                                        )
-                                    "
-                                    disabled
-                                />
-                                <Label
-                                    :for="`show-permission-${permission.id}`"
-                                    class="text-sm font-normal"
-                                >
+                                    :model-value="selectedRole.permissions?.some((p: any) => Number(p.id) === Number(permission.id))"
+                                    disabled />
+                                <Label :for="`show-permission-${permission.id}`" class="text-sm font-normal">
                                     {{ permission.name }}
                                 </Label>
                             </div>
@@ -520,13 +379,7 @@ useFlashWatcher();
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        @click="isShowOpen = false"
-                    >
-                        Close
-                    </Button>
+                    <Button type="button" variant="outline" @click="isShowOpen = false">Close</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -536,36 +389,17 @@ useFlashWatcher();
             <DialogContent class="sm:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle>Import Roles</DialogTitle>
-                    <DialogDescription>
-                        Upload an Excel file to import roles.
-                    </DialogDescription>
+                    <DialogDescription>Upload an Excel file to import roles.</DialogDescription>
                 </DialogHeader>
                 <form @submit.prevent="submitImport" class="space-y-4">
                     <div class="grid gap-2">
                         <Label for="import-file">File</Label>
-                        <Input
-                            id="import-file"
-                            type="file"
-                            accept=".xlsx"
-                            @change="onFileChange"
-                        />
+                        <Input id="import-file" type="file" accept=".xlsx" @change="onFileChange" />
                         <InputError :message="importForm.errors.file" />
                     </div>
                     <DialogFooter>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            @click="isImportOpen = false"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="submit"
-                            :disabled="importForm.processing"
-                            class="cursor-pointer"
-                        >
-                            Import
-                        </Button>
+                        <Button type="button" variant="outline" @click="isImportOpen = false">Cancel</Button>
+                        <Button type="submit" :disabled="importForm.processing" class="cursor-pointer">Import</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>

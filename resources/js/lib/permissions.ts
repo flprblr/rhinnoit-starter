@@ -12,9 +12,7 @@ export const createCan = (): Can => {
                   permissions?: string[];
               })
             | null;
-        const userPermissions: string[] = Array.isArray(authUser?.permissions)
-            ? (authUser?.permissions as string[])
-            : [];
+        const userPermissions: string[] = Array.isArray(authUser?.permissions) ? (authUser?.permissions as string[]) : [];
 
         if (Array.isArray(permission)) {
             return permission.every((perm) => userPermissions.includes(perm));
