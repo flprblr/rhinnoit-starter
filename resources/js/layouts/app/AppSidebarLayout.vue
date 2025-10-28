@@ -3,7 +3,9 @@ import AppContent from '@/components/AppContent.vue';
 import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarHeader from '@/components/AppSidebarHeader.vue';
+import { Toaster } from '@/components/ui/sonner';
 import type { BreadcrumbItemType } from '@/types';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 interface Props {
     breadcrumbs?: BreadcrumbItemType[];
@@ -11,6 +13,29 @@ interface Props {
 
 withDefaults(defineProps<Props>(), {
     breadcrumbs: () => [],
+});
+
+const toasterTheme = ref<'light' | 'dark'>('light');
+
+let observer: MutationObserver | null = null;
+
+const updateThemeFromDom = () => {
+    const isDark = document.documentElement.classList.contains('dark');
+    toasterTheme.value = isDark ? 'dark' : 'light';
+};
+
+onMounted(() => {
+    updateThemeFromDom();
+    observer = new MutationObserver(updateThemeFromDom);
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class'],
+    });
+});
+
+onBeforeUnmount(() => {
+    observer?.disconnect();
+    observer = null;
 });
 </script>
 
@@ -21,5 +46,6 @@ withDefaults(defineProps<Props>(), {
             <AppSidebarHeader :breadcrumbs="breadcrumbs" />
             <slot />
         </AppContent>
+        <Toaster :theme="toasterTheme" />
     </AppShell>
 </template>

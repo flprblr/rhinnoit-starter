@@ -36,6 +36,23 @@ class GoogleController extends Controller
             abort(422, 'The Google account does not provide a valid email address.');
         }
 
+        // Enforce allowed domain from env
+        $allowedDomain = (string) (config('services.google.allowed_domain') ?: env('GOOGLE_ALLOWED_DOMAIN'));
+        $allowedDomain = trim(strtolower($allowedDomain));
+        $atPos = strrpos($email, '@');
+        $emailDomain = $atPos !== false ? strtolower(substr($email, $atPos + 1)) : '';
+        if ($allowedDomain === '') {
+            return redirect()
+                ->route('login')
+                ->with('error', __('Configuración inválida: GOOGLE_ALLOWED_DOMAIN no está definido.'));
+        }
+
+        if ($emailDomain === '' || ! hash_equals($allowedDomain, $emailDomain)) {
+            return redirect()
+                ->route('login')
+                ->with('error', __('Solo se permiten cuentas del dominio :domain.', ['domain' => $allowedDomain]));
+        }
+
         $user = User::where('email', $email)->first();
 
         if ($user) {

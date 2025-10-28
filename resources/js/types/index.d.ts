@@ -25,6 +25,7 @@ export type AppPageProps<
     quote: { message: string; author: string };
     auth: Auth;
     sidebarOpen: boolean;
+    flash?: Flash;
 };
 
 export interface User {
@@ -55,3 +56,10 @@ export type RowAction = {
     icon?: Component;
     confirm?: { title: string; description: string };
 };
+
+export interface Flash {
+    success?: string;
+    error?: string;
+    warning?: string;
+    info?: string;
+}
