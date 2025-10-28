@@ -71,9 +71,12 @@ class GoogleController extends Controller
      */
     private function updateExistingUser(User $user, GoogleUserContract $googleUser): void
     {
+        $avatarUrl = $googleUser->getAvatar();
+        $localAvatarPath = $this->downloadAndStoreAvatar($avatarUrl, $user->id);
+
         $user->fill([
             'google_id' => $user->google_id ?: $googleUser->getId(),
-            'avatar' => $googleUser->getAvatar(),
+            'avatar' => $localAvatarPath ?: $avatarUrl,
         ])->save();
     }
 
@@ -83,17 +86,56 @@ class GoogleController extends Controller
     private function registerNewUser(GoogleUserContract $googleUser, string $email): User
     {
         $plainPassword = Str::random(16);
+        $avatarUrl = $googleUser->getAvatar();
 
         $user = User::create([
             'name' => $googleUser->getName() ?: $googleUser->getNickname() ?: $email,
             'email' => $email,
             'password' => Hash::make($plainPassword),
             'google_id' => $googleUser->getId(),
-            'avatar' => $googleUser->getAvatar(),
+            'avatar' => $avatarUrl,
         ]);
+
+        // Download and store avatar after user creation
+        $localAvatarPath = $this->downloadAndStoreAvatar($avatarUrl, $user->id);
+        if ($localAvatarPath) {
+            $user->update(['avatar' => $localAvatarPath]);
+        }
 
         Mail::to($user->email)->send(new GoogleAccountPassword($user, $plainPassword));
 
         return $user;
+    }
+
+    /**
+     * Download Google avatar and store it locally
+     */
+    private function downloadAndStoreAvatar(string $avatarUrl, int $userId): ?string
+    {
+        try {
+            $imageData = file_get_contents($avatarUrl);
+            if ($imageData === false) {
+                return null;
+            }
+
+            $extension = 'jpg'; // Google avatars are typically JPG
+            $filename = "avatar_{$userId}_" . time() . ".{$extension}";
+            $path = "avatars/{$filename}";
+            $fullPath = storage_path("app/public/{$path}");
+
+            // Ensure directory exists
+            $directory = dirname($fullPath);
+            if (!is_dir($directory)) {
+                mkdir($directory, 0755, true);
+            }
+
+            if (file_put_contents($fullPath, $imageData) !== false) {
+                return "storage/{$path}";
+            }
+        } catch (\Exception $e) {
+            \Log::warning("Failed to download avatar for user {$userId}: " . $e->getMessage());
+        }
+
+        return null;
     }
 }

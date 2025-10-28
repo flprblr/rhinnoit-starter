@@ -48,6 +48,10 @@ const props = withDefaults(defineProps<Props>(), {
 const page = usePage();
 const auth = computed(() => page.props.auth);
 
+const handleAvatarError = () => {
+    console.log('Avatar image failed to load, showing fallback');
+};
+
 const isCurrentRoute = computed(
     () => (url: NonNullable<InertiaLinkProps['href']>) =>
         urlIsActive(url, page.url),
@@ -251,6 +255,7 @@ const rightNavItems: NavItem[] = [
                                         v-if="auth.user.avatar"
                                         :src="auth.user.avatar"
                                         :alt="auth.user.name"
+                                        @error="handleAvatarError"
                                     />
                                     <AvatarFallback
                                         class="rounded-lg bg-neutral-200 font-semibold text-black dark:bg-neutral-700 dark:text-white"
