@@ -14,12 +14,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import {
-    LayoutGrid,
-    UserRound,
-    UserRoundCheck,
-    UserRoundCog,
-} from 'lucide-vue-next';
+import { LayoutGrid } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -30,23 +25,7 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Users',
-        href: '/maintainers/users',
-        icon: UserRound,
-    },
-    {
-        title: 'Roles',
-        href: '/maintainers/roles',
-        icon: UserRoundCog,
-    },
-    {
-        title: 'Permissions',
-        href: '/maintainers/permissions',
-        icon: UserRoundCheck,
-    },
-];
+const footerNavItems: NavItem[] = [];
 </script>
 
 <template>

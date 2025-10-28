@@ -84,7 +84,8 @@ const isCreateOpen = ref(false);
 const isEditOpen = ref(false);
 const isShowOpen = ref(false);
 const isImportOpen = ref(false);
-const selectedPermission = ref<any>(null);
+type PermissionRow = { id: number | string; name: string };
+const selectedPermission = ref<PermissionRow | null>(null);
 
 // Forms
 const createForm = useForm('post', storePermission().url, {
@@ -105,7 +106,7 @@ const importForm = useForm('post', importPermissionsForm().url, {
 // Actions
 const onRowAction = ({ key, id }: { key: string; id: number | string }) => {
     const permission = props.permissions.data.find(
-        (p: any) => Number(p.id) === Number(id),
+        (p: Record<string, unknown>) => Number(p.id as number) === Number(id),
     );
 
     if (!permission) return;

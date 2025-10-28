@@ -32,8 +32,8 @@ import { ref } from 'vue';
 
 const props = withDefaults(
     defineProps<{
-        columns: TableColumn[];
-        items: any[];
+        columns: TableColumn<Record<string, unknown>>[];
+        items: Record<string, unknown>[];
         itemsPerPage?: number;
         total?: number;
         currentPage?: number;
@@ -55,18 +55,32 @@ const emit = defineEmits<{
     (e: 'update:page', value: number): void;
     (
         e: 'row:action',
-        payload: { key: string; id: string | number; item: any },
+        payload: {
+            key: string;
+            id: string | number;
+            item: Record<string, unknown>;
+        },
     ): void;
 }>();
 
 const isConfirmOpen = ref(false);
-const pendingAction = ref<{ action: RowAction; item: any } | null>(null);
+const pendingAction = ref<{
+    action: RowAction;
+    item: Record<string, unknown>;
+} | null>(null);
 
-const getCellValue = (item: any, field: string | number | symbol) => {
-    return (item as any)[field as any];
+const getCellValue = (
+    item: Record<string, unknown>,
+    field: string | number | symbol,
+) => {
+    const key = String(field);
+    return (item as Record<string, unknown>)[key];
 };
 
-const handleActionClick = (action: RowAction, item: any) => {
+const handleActionClick = (
+    action: RowAction,
+    item: Record<string, unknown>,
+) => {
     if (action.confirm) {
         pendingAction.value = { action, item };
         isConfirmOpen.value = true;
@@ -74,7 +88,9 @@ const handleActionClick = (action: RowAction, item: any) => {
     }
     emit('row:action', {
         key: action.key,
-        id: (item as any)[props.rowKey as any],
+        id: (item as Record<string, unknown>)[props.rowKey as string] as
+            | string
+            | number,
         item,
     });
 };
@@ -82,7 +98,9 @@ const handleActionClick = (action: RowAction, item: any) => {
 const confirmAction = () => {
     if (pendingAction.value) {
         const { action, item } = pendingAction.value;
-        const id = (item as any)[props.rowKey as any];
+        const id = (item as Record<string, unknown>)[props.rowKey as string] as
+            | string
+            | number;
         emit('row:action', { key: action.key, id, item });
     }
     isConfirmOpen.value = false;
@@ -95,7 +113,7 @@ const cancelAction = () => {
 };
 
 defineSlots<{
-    actions(props: { item: any }): any;
+    actions(props: { item: Record<string, unknown> }): unknown;
 }>();
 </script>
 

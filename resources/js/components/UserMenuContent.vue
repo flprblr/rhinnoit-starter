@@ -7,10 +7,17 @@ import {
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { logout } from '@/routes';
+import maintainers from '@/routes/maintainers';
 import { edit } from '@/routes/profile';
 import type { User } from '@/types';
 import { Link, router } from '@inertiajs/vue3';
-import { LogOut, Settings } from 'lucide-vue-next';
+import {
+    LogOut,
+    Settings,
+    UserRound,
+    UserRoundCheck,
+    UserRoundCog,
+} from 'lucide-vue-next';
 
 interface Props {
     user: User;
@@ -35,6 +42,42 @@ defineProps<Props>();
             <Link class="block w-full" :href="edit()" prefetch as="button">
                 <Settings class="mr-2 h-4 w-4" />
                 Settings
+            </Link>
+        </DropdownMenuItem>
+    </DropdownMenuGroup>
+    <DropdownMenuSeparator />
+    <DropdownMenuGroup>
+        <DropdownMenuItem :as-child="true" v-if="$can('users.index')">
+            <Link
+                class="block w-full"
+                :href="maintainers.users.index().url"
+                prefetch
+                as="button"
+            >
+                <UserRound class="mr-2 h-4 w-4" />
+                Users
+            </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem :as-child="true" v-if="$can('roles.index')">
+            <Link
+                class="block w-full"
+                :href="maintainers.roles.index().url"
+                prefetch
+                as="button"
+            >
+                <UserRoundCog class="mr-2 h-4 w-4" />
+                Roles
+            </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem :as-child="true" v-if="$can('permissions.index')">
+            <Link
+                class="block w-full"
+                :href="maintainers.permissions.index().url"
+                prefetch
+                as="button"
+            >
+                <UserRoundCheck class="mr-2 h-4 w-4" />
+                Permissions
             </Link>
         </DropdownMenuItem>
     </DropdownMenuGroup>

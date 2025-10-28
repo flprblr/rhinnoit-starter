@@ -6,6 +6,7 @@ composer install &&
 composer pint &&
 npm cache verify &&
 npm install &&
+php artisan wayfinder:generate &&
 npm run format &&
 rm -rf public/storage &&
 php artisan storage:link &&
@@ -20,8 +21,9 @@ php artisan about
 
 ```bash
 composer update &&
-npm update &&
 composer pint &&
+npm update &&
+php artisan wayfinder:generate &&
 npm run format
 ```
 

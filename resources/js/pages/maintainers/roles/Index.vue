@@ -90,7 +90,13 @@ const isCreateOpen = ref(false);
 const isEditOpen = ref(false);
 const isShowOpen = ref(false);
 const isImportOpen = ref(false);
-const selectedRole = ref<any>(null);
+type RoleRow = {
+    id: number | string;
+    name: string;
+    permissions?: Array<{ id: number | string; name: string }>;
+};
+
+const selectedRole = ref<RoleRow | null>(null);
 
 // Forms
 const createForm = useForm('post', storeRole().url, {
@@ -112,7 +118,9 @@ const importForm = useForm('post', importRolesForm().url, {
 
 // Actions
 const onRowAction = ({ key, id }: { key: string; id: number | string }) => {
-    const role = props.roles.data.find((r: any) => Number(r.id) === Number(id));
+    const role = props.roles.data.find(
+        (r: Record<string, unknown>) => Number(r.id as number) === Number(id),
+    ) as RoleRow | undefined;
 
     if (!role) return;
 
@@ -127,8 +135,7 @@ const onRowAction = ({ key, id }: { key: string; id: number | string }) => {
         editForm.name = role.name;
         editForm.created_at = role.created_at;
         editForm.updated_at = role.updated_at;
-        editForm.permissions =
-            role.permissions?.map((p: any) => Number(p.id)) || [];
+        editForm.permissions = role.permissions?.map((p) => Number(p.id)) || [];
         isEditOpen.value = true;
         return;
     }

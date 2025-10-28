@@ -91,7 +91,16 @@ const isCreateOpen = ref(false);
 const isEditOpen = ref(false);
 const isShowOpen = ref(false);
 const isImportOpen = ref(false);
-const selectedUser = ref<any>(null);
+type UserRow = {
+    id: number | string;
+    name: string;
+    email: string;
+    created_at?: string | null;
+    updated_at?: string | null;
+    roles?: Array<{ id: number | string; name: string }>;
+};
+
+const selectedUser = ref<UserRow | null>(null);
 
 // Forms
 const createForm = useForm('post', storeUser().url, {
@@ -117,7 +126,9 @@ const importForm = useForm('post', importUsersForm().url, {
 
 // Actions
 const onRowAction = ({ key, id }: { key: string; id: number | string }) => {
-    const user = props.users.data.find((u: any) => Number(u.id) === Number(id));
+    const user = props.users.data.find(
+        (u: Record<string, unknown>) => Number(u.id as number) === Number(id),
+    ) as UserRow | undefined;
 
     if (!user) return;
 
@@ -128,13 +139,13 @@ const onRowAction = ({ key, id }: { key: string; id: number | string }) => {
     }
     if (key === 'edit') {
         selectedUser.value = user;
-        editForm.id = user.id;
+        editForm.id = String(user.id);
         editForm.name = user.name;
-        editForm.email = user.email;
+        editForm.email = String(user.email);
         editForm.password = '';
-        editForm.created_at = user.created_at;
-        editForm.updated_at = user.updated_at;
-        editForm.roles = user.roles?.map((r: any) => Number(r.id)) || [];
+        editForm.created_at = user.created_at ?? null;
+        editForm.updated_at = user.updated_at ?? null;
+        editForm.roles = user.roles?.map((r) => Number(r.id)) || [];
         isEditOpen.value = true;
         return;
     }
@@ -272,7 +283,11 @@ useFlashWatcher();
                         Create a new user for the system.
                     </DialogDescription>
                 </DialogHeader>
-                <form @submit.prevent="submitCreate" class="space-y-4">
+                <form
+                    @submit.prevent="submitCreate"
+                    class="space-y-4"
+                    autocomplete="off"
+                >
                     <div class="grid gap-2">
                         <Label for="create-name">Name</Label>
                         <Input
@@ -290,6 +305,8 @@ useFlashWatcher();
                             v-model="createForm.email"
                             @change="createForm.validate('email')"
                             type="email"
+                            name="new-email"
+                            autocomplete="off"
                         />
                         <InputError :message="createForm.errors.email" />
                     </div>
@@ -300,6 +317,8 @@ useFlashWatcher();
                             v-model="createForm.password"
                             @change="createForm.validate('password')"
                             type="password"
+                            name="new-password"
+                            autocomplete="new-password"
                         />
                         <InputError :message="createForm.errors.password" />
                     </div>
@@ -547,7 +566,7 @@ useFlashWatcher();
                                     :id="`show-role-${role.id}`"
                                     :model-value="
                                         selectedUser.roles?.some(
-                                            (r: any) =>
+                                            (r: { id: number | string }) =>
                                                 Number(r.id) ===
                                                 Number(role.id),
                                         )
