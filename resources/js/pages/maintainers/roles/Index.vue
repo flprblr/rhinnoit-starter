@@ -93,6 +93,8 @@ const isImportOpen = ref(false);
 type RoleRow = {
     id: number | string;
     name: string;
+    created_at?: string | null;
+    updated_at?: string | null;
     permissions?: Array<{ id: number | string; name: string }>;
 };
 
@@ -131,10 +133,10 @@ const onRowAction = ({ key, id }: { key: string; id: number | string }) => {
     }
     if (key === 'edit') {
         selectedRole.value = role;
-        editForm.id = role.id;
-        editForm.name = role.name;
-        editForm.created_at = role.created_at;
-        editForm.updated_at = role.updated_at;
+        editForm.id = String(role.id);
+        editForm.name = String(role.name);
+        editForm.created_at = role.created_at ?? null;
+        editForm.updated_at = role.updated_at ?? null;
         editForm.permissions = role.permissions?.map((p) => Number(p.id)) || [];
         isEditOpen.value = true;
         return;

@@ -84,7 +84,12 @@ const isCreateOpen = ref(false);
 const isEditOpen = ref(false);
 const isShowOpen = ref(false);
 const isImportOpen = ref(false);
-type PermissionRow = { id: number | string; name: string };
+type PermissionRow = {
+    id: number | string;
+    name: string;
+    created_at?: string | null;
+    updated_at?: string | null;
+};
 const selectedPermission = ref<PermissionRow | null>(null);
 
 // Forms
@@ -107,7 +112,7 @@ const importForm = useForm('post', importPermissionsForm().url, {
 const onRowAction = ({ key, id }: { key: string; id: number | string }) => {
     const permission = props.permissions.data.find(
         (p: Record<string, unknown>) => Number(p.id as number) === Number(id),
-    );
+    ) as PermissionRow | undefined;
 
     if (!permission) return;
 
@@ -118,10 +123,10 @@ const onRowAction = ({ key, id }: { key: string; id: number | string }) => {
     }
     if (key === 'edit') {
         selectedPermission.value = permission;
-        editForm.id = permission.id;
-        editForm.name = permission.name;
-        editForm.created_at = permission.created_at;
-        editForm.updated_at = permission.updated_at;
+        editForm.id = String(permission.id);
+        editForm.name = String(permission.name);
+        editForm.created_at = permission.created_at ?? null;
+        editForm.updated_at = permission.updated_at ?? null;
         isEditOpen.value = true;
         return;
     }
