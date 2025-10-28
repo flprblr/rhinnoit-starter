@@ -72,9 +72,9 @@ const rowActions: RowAction[] = [
         icon: Trash2,
         can: 'permissions.destroy',
         confirm: {
-            title: '¿Estás seguro?',
+            title: 'Are you sure?',
             description:
-                'Esto eliminará permanentemente el permiso seleccionado.',
+                'This will permanently delete the selected permission.',
         },
     },
 ];
@@ -232,7 +232,7 @@ useFlashWatcher();
 
         <!-- Create Dialog -->
         <Dialog v-model:open="isCreateOpen">
-            <DialogContent class="sm:max-w-[500px]">
+            <DialogContent class="sm:max-w-[600px]">
                 <DialogHeader>
                     <DialogTitle>Create Permission</DialogTitle>
                     <DialogDescription>
@@ -272,7 +272,9 @@ useFlashWatcher();
 
         <!-- Edit Dialog -->
         <Dialog v-model:open="isEditOpen">
-            <DialogContent class="sm:max-w-[500px]">
+            <DialogContent
+                class="max-h-[90vh] overflow-y-auto sm:max-w-[600px]"
+            >
                 <DialogHeader>
                     <DialogTitle>Edit Permission</DialogTitle>
                     <DialogDescription>
@@ -301,7 +303,7 @@ useFlashWatcher();
                         <InputError :message="editForm.errors.name" />
                     </div>
                     <div class="grid gap-2" v-if="editForm.created_at">
-                        <Label for="edit-created">Created at</Label>
+                        <Label for="edit-created">Created At</Label>
                         <Input
                             id="edit-created"
                             v-model="editForm.created_at"
@@ -311,7 +313,7 @@ useFlashWatcher();
                         />
                     </div>
                     <div class="grid gap-2" v-if="editForm.updated_at">
-                        <Label for="edit-updated">Updated at</Label>
+                        <Label for="edit-updated">Updated At</Label>
                         <Input
                             id="edit-updated"
                             v-model="editForm.updated_at"
@@ -342,7 +344,9 @@ useFlashWatcher();
 
         <!-- Show Dialog -->
         <Dialog v-model:open="isShowOpen">
-            <DialogContent class="sm:max-w-[500px]">
+            <DialogContent
+                class="max-h-[90vh] overflow-y-auto sm:max-w-[600px]"
+            >
                 <DialogHeader>
                     <DialogTitle>Permission Details</DialogTitle>
                     <DialogDescription>
@@ -372,7 +376,7 @@ useFlashWatcher();
                         class="grid gap-2"
                         v-if="selectedPermission.created_at"
                     >
-                        <Label>Created at</Label>
+                        <Label>Created At</Label>
                         <Input
                             :model-value="selectedPermission.created_at"
                             type="text"
@@ -384,7 +388,7 @@ useFlashWatcher();
                         class="grid gap-2"
                         v-if="selectedPermission.updated_at"
                     >
-                        <Label>Updated at</Label>
+                        <Label>Updated At</Label>
                         <Input
                             :model-value="selectedPermission.updated_at"
                             type="text"

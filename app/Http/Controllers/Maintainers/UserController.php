@@ -10,10 +10,13 @@ use App\Imports\UsersImport;
 use App\Models\Role;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
+use Inertia\Response;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class UserController extends Controller
 {
@@ -25,7 +28,7 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $allowedSortColumns = ['id', 'name', 'email', 'created_at', 'updated_at'];
         $allowedSortDirections = ['asc', 'desc'];
@@ -73,7 +76,7 @@ class UserController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(): Response
     {
         $roles = Role::select(['id', 'name'])->orderBy('id', 'asc')->get();
 
@@ -85,7 +88,7 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreUserRequest $request)
+    public function store(StoreUserRequest $request): RedirectResponse
     {
         $validated = $request->validated();
 
@@ -107,7 +110,7 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(User $user)
+    public function show(User $user): Response
     {
         $user->load([
             'roles' => function ($query) {
@@ -129,7 +132,7 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(User $user)
+    public function edit(User $user): Response
     {
         $user->load([
             'roles' => function ($query) {
@@ -139,6 +142,7 @@ class UserController extends Controller
                 $query->select(['id', 'name'])->orderBy('id', 'asc');
             },
         ]);
+
         $roles = Role::select(['id', 'name'])->orderBy('id', 'asc')->get();
 
         return Inertia::render('maintainers/users/Edit', [
@@ -150,7 +154,7 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateUserRequest $request, User $user)
+    public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
         $validated = $request->validated();
 
@@ -179,7 +183,7 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(User $user)
+    public function destroy(User $user): RedirectResponse
     {
         $user->delete();
 
@@ -189,9 +193,10 @@ class UserController extends Controller
     /**
      * Export to Excel
      */
-    public function export()
+    public function export(): BinaryFileResponse|RedirectResponse
     {
         $this->authorize('export', User::class);
+
         try {
             $app = config('app.name');
             $tz = config('app.timezone', 'UTC');
@@ -207,7 +212,7 @@ class UserController extends Controller
     /**
      * Show import form
      */
-    public function importForm()
+    public function importForm(): Response
     {
         return Inertia::render('maintainers/users/Import');
     }
@@ -215,7 +220,7 @@ class UserController extends Controller
     /**
      * Import from Excel
      */
-    public function import(Request $request)
+    public function import(Request $request): RedirectResponse
     {
         $this->authorize('import', User::class);
         $request->validate([

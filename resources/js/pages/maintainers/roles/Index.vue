@@ -61,7 +61,12 @@ const columns: TableColumn[] = [
 const headerActions = ['create', 'export', 'import'] as const;
 
 const rowActions: RowAction[] = [
-    { key: 'show', label: 'Show', icon: Eye, can: 'roles.show' },
+    {
+        key: 'show',
+        label: 'Show',
+        icon: Eye,
+        can: 'roles.show',
+    },
     {
         key: 'edit',
         label: 'Edit',
@@ -74,8 +79,8 @@ const rowActions: RowAction[] = [
         icon: Trash2,
         can: 'roles.destroy',
         confirm: {
-            title: '¿Estás seguro?',
-            description: 'Esto eliminará permanentemente el rol seleccionado.',
+            title: 'Are you sure?',
+            description: 'This will permanently delete the selected role.',
         },
     },
 ];
@@ -356,7 +361,7 @@ useFlashWatcher();
                         <InputError :message="editForm.errors.name" />
                     </div>
                     <div class="grid gap-2" v-if="editForm.created_at">
-                        <Label for="edit-created">Created at</Label>
+                        <Label for="edit-created">Created At</Label>
                         <Input
                             id="edit-created"
                             v-model="editForm.created_at"
@@ -366,7 +371,7 @@ useFlashWatcher();
                         />
                     </div>
                     <div class="grid gap-2" v-if="editForm.updated_at">
-                        <Label for="edit-updated">Updated at</Label>
+                        <Label for="edit-updated">Updated At</Label>
                         <Input
                             id="edit-updated"
                             v-model="editForm.updated_at"
@@ -457,7 +462,7 @@ useFlashWatcher();
                         />
                     </div>
                     <div class="grid gap-2" v-if="selectedRole.created_at">
-                        <Label>Created at</Label>
+                        <Label>Created At</Label>
                         <Input
                             :model-value="selectedRole.created_at"
                             type="text"
@@ -466,7 +471,7 @@ useFlashWatcher();
                         />
                     </div>
                     <div class="grid gap-2" v-if="selectedRole.updated_at">
-                        <Label>Updated at</Label>
+                        <Label>Updated At</Label>
                         <Input
                             :model-value="selectedRole.updated_at"
                             type="text"

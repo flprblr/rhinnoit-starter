@@ -24,21 +24,24 @@ class TemplateCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         // CommandHelper::setLogChannel('single');
+
         CommandHelper::start($this);
 
         try {
-
-            CommandHelper::progress($this, 'Procesing...');
+            CommandHelper::progress($this, 'Processing...');
             // CommandHelper::consoleProgress($this, 'Console Only');
             // CommandHelper::logProgress($this, 'Log Only');
 
+            // Your command logic here...
+
             return CommandHelper::success($this);
         } catch (\Exception $e) {
+            $this->error('Error executing the command: '.$e->getMessage());
+
             return CommandHelper::failure($this);
         }
-
     }
 }

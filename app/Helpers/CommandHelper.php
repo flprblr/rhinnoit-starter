@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\Log;
 
 class CommandHelper
 {
-    private static $startTimes = [];
+    private static array $startTimes = [];
 
-    private static $logChannel = 'single';
+    private static string $logChannel = 'single';
 
-    private static $fallbackChannel = 'single';
+    private static string $fallbackChannel = 'single';
 
     /**
      * Sets the logging channel for commands
@@ -77,7 +77,7 @@ class CommandHelper
 
         $startTime = self::$startTimes[$commandName];
         $endTime = Carbon::now();
-        $executionTime = abs($endTime->timestamp - $startTime->timestamp);
+        $executionTime = $startTime->diffInSeconds($endTime);
         $formattedTime = self::formatExecutionTime($executionTime);
 
         if ($success) {
@@ -106,7 +106,7 @@ class CommandHelper
         $startTime = self::$startTimes[$commandName];
         $currentTime = Carbon::now();
 
-        return abs($currentTime->timestamp - $startTime->timestamp);
+        return $startTime->diffInSeconds($currentTime);
     }
 
     /**
@@ -149,7 +149,7 @@ class CommandHelper
     /**
      * Logs progress without tracking time
      */
-    public static function logProgress($command, string $message, string $level = 'info'): void
+    public static function logProgress(Command|string $command, string $message, string $level = 'info'): void
     {
         $commandName = is_string($command) ? $command : $command->getName();
         $logMessage = "{$commandName} {$message}";

@@ -9,9 +9,12 @@ use App\Http\Requests\Maintainers\Permissions\UpdatePermissionRequest;
 use App\Imports\PermissionsImport;
 use App\Models\Permission;
 use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PermissionController extends Controller
 {
@@ -23,7 +26,7 @@ class PermissionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $allowedSortColumns = ['id', 'name', 'created_at', 'updated_at'];
         $allowedSortDirections = ['asc', 'desc'];
@@ -67,7 +70,7 @@ class PermissionController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(): Response
     {
         return Inertia::render('maintainers/permissions/Create');
     }
@@ -75,7 +78,7 @@ class PermissionController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StorePermissionRequest $request)
+    public function store(StorePermissionRequest $request): RedirectResponse
     {
         Permission::create([
             'name' => $request->validated()['name'],
@@ -90,7 +93,7 @@ class PermissionController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Permission $permission)
+    public function show(Permission $permission): Response
     {
         $permission->load(['roles' => function ($query) {
             $query->select(['id', 'name'])->orderBy('id', 'asc');
@@ -104,7 +107,7 @@ class PermissionController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Permission $permission)
+    public function edit(Permission $permission): Response
     {
         $permission->load(['roles' => function ($query) {
             $query->select(['id', 'name'])->orderBy('id', 'asc');
@@ -118,7 +121,7 @@ class PermissionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdatePermissionRequest $request, Permission $permission)
+    public function update(UpdatePermissionRequest $request, Permission $permission): RedirectResponse
     {
         $permission->update([
             'name' => $request->validated()['name'],
@@ -132,7 +135,7 @@ class PermissionController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Permission $permission)
+    public function destroy(Permission $permission): RedirectResponse
     {
         $permission->delete();
 
@@ -142,9 +145,10 @@ class PermissionController extends Controller
     /**
      * Export to Excel
      */
-    public function export()
+    public function export(): BinaryFileResponse|RedirectResponse
     {
         $this->authorize('export', Permission::class);
+
         try {
             $app = config('app.name');
             $tz = config('app.timezone', 'UTC');
@@ -160,7 +164,7 @@ class PermissionController extends Controller
     /**
      * Show import form
      */
-    public function importForm()
+    public function importForm(): Response
     {
         return Inertia::render('maintainers/permissions/Import');
     }
@@ -168,7 +172,7 @@ class PermissionController extends Controller
     /**
      * Import from Excel
      */
-    public function import(Request $request)
+    public function import(Request $request): RedirectResponse
     {
         $this->authorize('import', Permission::class);
         $request->validate([

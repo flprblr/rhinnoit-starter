@@ -209,12 +209,12 @@ defineSlots<{
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>{{
-                        pendingAction?.action.confirm?.title ?? '¿Estás seguro?'
+                        pendingAction?.action.confirm?.title ?? 'Are you sure?'
                     }}</AlertDialogTitle>
                     <AlertDialogDescription>
                         {{
                             pendingAction?.action.confirm?.description ??
-                            'Esta acción no se puede deshacer.'
+                            'This action cannot be undone.'
                         }}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
@@ -222,12 +222,12 @@ defineSlots<{
                     <AlertDialogCancel
                         @click="cancelAction"
                         class="cursor-pointer"
-                        >Cancelar</AlertDialogCancel
+                        >Cancel</AlertDialogCancel
                     >
                     <AlertDialogAction
                         @click="confirmAction"
                         class="cursor-pointer"
-                        >Confirmar</AlertDialogAction
+                        >Confirm</AlertDialogAction
                     >
                 </AlertDialogFooter>
             </AlertDialogContent>
