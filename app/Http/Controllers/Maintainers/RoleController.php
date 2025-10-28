@@ -44,7 +44,8 @@ class RoleController extends Controller
         $perPage = (int) $request->input('per_page', $defaultPerPage);
         $perPage = $perPage > 0 ? min($perPage, $maxPerPage) : $defaultPerPage;
 
-        $query = Role::select(['id', 'name', 'created_at', 'updated_at']);
+        $query = Role::select(['id', 'name', 'created_at', 'updated_at'])
+            ->with('permissions:id,name');
 
         if ($search = trim((string) $request->input('search'))) {
             $query->where(function ($q) use ($search) {
@@ -58,9 +59,11 @@ class RoleController extends Controller
         $query->orderBy($sortBy, $sortDirection);
 
         $roles = $query->paginate($perPage)->withQueryString();
+        $permissions = Permission::select(['id', 'name'])->orderBy('id', 'asc')->get();
 
         return Inertia::render('maintainers/roles/Index', [
             'roles' => $roles,
+            'permissions' => $permissions,
             'filters' => $request->only(['search', 'sort_by', 'sort_direction', 'per_page']),
         ]);
     }
@@ -94,7 +97,7 @@ class RoleController extends Controller
         }
 
         return redirect()
-            ->route('maintainers.roles.create')
+            ->route('maintainers.roles.index')
             ->with('success', 'Role created successfully.');
     }
 
@@ -149,7 +152,7 @@ class RoleController extends Controller
         }
 
         return redirect()
-            ->route('maintainers.roles.edit', $role)
+            ->route('maintainers.roles.index')
             ->with('success', 'Role updated successfully.');
     }
 

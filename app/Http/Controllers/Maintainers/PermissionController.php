@@ -83,7 +83,7 @@ class PermissionController extends Controller
         ]);
 
         return redirect()
-            ->route('maintainers.permissions.create')
+            ->route('maintainers.permissions.index')
             ->with('success', 'Permission created successfully.');
     }
 
@@ -125,7 +125,7 @@ class PermissionController extends Controller
         ]);
 
         return redirect()
-            ->route('maintainers.permissions.edit', $permission)
+            ->route('maintainers.permissions.index')
             ->with('success', 'Permission updated successfully.');
     }
 

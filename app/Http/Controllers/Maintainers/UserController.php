@@ -45,7 +45,8 @@ class UserController extends Controller
         $perPage = (int) $request->input('per_page', $defaultPerPage);
         $perPage = $perPage > 0 ? min($perPage, $maxPerPage) : $defaultPerPage;
 
-        $query = User::select(['id', 'name', 'email', 'created_at', 'updated_at']);
+        $query = User::select(['id', 'name', 'email', 'created_at', 'updated_at'])
+            ->with('roles:id,name');
 
         if ($search = trim((string) $request->input('search'))) {
             $query->where(function ($q) use ($search) {
@@ -60,9 +61,11 @@ class UserController extends Controller
         $query->orderBy($sortBy, $sortDirection);
 
         $users = $query->paginate($perPage)->withQueryString();
+        $roles = Role::select(['id', 'name'])->orderBy('id', 'asc')->get();
 
         return Inertia::render('maintainers/users/Index', [
             'users' => $users,
+            'roles' => $roles,
             'filters' => $request->only(['search', 'sort_by', 'sort_direction', 'per_page']),
         ]);
     }
@@ -97,7 +100,7 @@ class UserController extends Controller
         }
 
         return redirect()
-            ->route('maintainers.users.create')
+            ->route('maintainers.users.index')
             ->with('success', 'User created successfully.');
     }
 
@@ -169,7 +172,7 @@ class UserController extends Controller
         }
 
         return redirect()
-            ->route('maintainers.users.edit', $user)
+            ->route('maintainers.users.index')
             ->with('success', 'User updated successfully.');
     }
 

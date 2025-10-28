@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
+import { useForm } from 'laravel-precognition-vue-inertia';
+import { ref } from 'vue';
 
 import AppLayout from '@/layouts/AppLayout.vue';
 
@@ -7,14 +9,26 @@ import { type BreadcrumbItem, type RowAction, type TableColumn } from '@/types';
 import { Eye, SquarePen, Trash2 } from 'lucide-vue-next';
 
 import HeaderTable from '@/components/HeaderTable.vue';
+import InputError from '@/components/InputError.vue';
 import SimpleTable from '@/components/SimpleTable.vue';
+import { Button } from '@/components/ui/button';
 import {
-    create as createPermission,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useFlashWatcher } from '@/composables/useFlashWatcher';
+import {
     destroy as destroyPermission,
-    edit as editPermission,
     exportMethod as exportPermissions,
     index as permissionsIndex,
-    show as showPermission,
+    store as storePermission,
+    update as updatePermission,
 } from '@/routes/maintainers/permissions';
 import { form as importPermissionsForm } from '@/routes/maintainers/permissions/import';
 
@@ -65,13 +79,49 @@ const rowActions: RowAction[] = [
     },
 ];
 
+// Dialog states
+const isCreateOpen = ref(false);
+const isEditOpen = ref(false);
+const isShowOpen = ref(false);
+const isImportOpen = ref(false);
+const selectedPermission = ref<any>(null);
+
+// Forms
+const createForm = useForm('post', storePermission().url, {
+    name: '',
+});
+
+const editForm = useForm('patch', '', {
+    id: '',
+    name: '',
+    created_at: null as string | null,
+    updated_at: null as string | null,
+});
+
+const importForm = useForm('post', importPermissionsForm().url, {
+    file: null as File | null,
+});
+
+// Actions
 const onRowAction = ({ key, id }: { key: string; id: number | string }) => {
+    const permission = props.permissions.data.find(
+        (p: any) => Number(p.id) === Number(id),
+    );
+
+    if (!permission) return;
+
     if (key === 'show') {
-        router.visit(showPermission(Number(id)).url);
+        selectedPermission.value = permission;
+        isShowOpen.value = true;
         return;
     }
     if (key === 'edit') {
-        router.visit(editPermission(Number(id)).url);
+        selectedPermission.value = permission;
+        editForm.id = permission.id;
+        editForm.name = permission.name;
+        editForm.created_at = permission.created_at;
+        editForm.updated_at = permission.updated_at;
+        isEditOpen.value = true;
         return;
     }
     if (key === 'delete') {
@@ -81,11 +131,13 @@ const onRowAction = ({ key, id }: { key: string; id: number | string }) => {
 };
 
 const goCreate = () => {
-    router.visit(createPermission().url);
+    createForm.reset();
+    isCreateOpen.value = true;
 };
 
 const goImport = () => {
-    router.visit(importPermissionsForm().url);
+    importForm.reset();
+    isImportOpen.value = true;
 };
 
 const downloadExport = () => {
@@ -104,6 +156,50 @@ const onChangePage = (p: number) => {
         replace: true,
     });
 };
+
+// Form submissions
+const submitCreate = () => {
+    createForm.post(storePermission().url, {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => {
+            isCreateOpen.value = false;
+            createForm.reset();
+        },
+    });
+};
+
+const submitEdit = () => {
+    editForm.patch(updatePermission(Number(editForm.id)).url, {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => {
+            isEditOpen.value = false;
+            editForm.reset();
+        },
+    });
+};
+
+const onFileChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0] ?? null;
+    importForm.file = file;
+    importForm.validate('file');
+};
+
+const submitImport = () => {
+    importForm.post(importPermissionsForm().url, {
+        forceFormData: true,
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => {
+            isImportOpen.value = false;
+            importForm.reset();
+        },
+    });
+};
+
+useFlashWatcher();
 </script>
 
 <template>
@@ -133,5 +229,220 @@ const onChangePage = (p: number) => {
                 @update:page="onChangePage"
             />
         </div>
+
+        <!-- Create Dialog -->
+        <Dialog v-model:open="isCreateOpen">
+            <DialogContent class="sm:max-w-[500px]">
+                <DialogHeader>
+                    <DialogTitle>Create Permission</DialogTitle>
+                    <DialogDescription>
+                        Create a new permission for the system.
+                    </DialogDescription>
+                </DialogHeader>
+                <form @submit.prevent="submitCreate" class="space-y-4">
+                    <div class="grid gap-2">
+                        <Label for="create-name">Name</Label>
+                        <Input
+                            id="create-name"
+                            v-model="createForm.name"
+                            @change="createForm.validate('name')"
+                            type="text"
+                        />
+                        <InputError :message="createForm.errors.name" />
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            @click="isCreateOpen = false"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            :disabled="createForm.processing"
+                            class="cursor-pointer"
+                        >
+                            Create
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Edit Dialog -->
+        <Dialog v-model:open="isEditOpen">
+            <DialogContent class="sm:max-w-[500px]">
+                <DialogHeader>
+                    <DialogTitle>Edit Permission</DialogTitle>
+                    <DialogDescription>
+                        Update the permission information.
+                    </DialogDescription>
+                </DialogHeader>
+                <form @submit.prevent="submitEdit" class="space-y-4">
+                    <div class="grid gap-2">
+                        <Label for="edit-id">ID</Label>
+                        <Input
+                            id="edit-id"
+                            v-model="editForm.id"
+                            type="text"
+                            readonly
+                            disabled
+                        />
+                    </div>
+                    <div class="grid gap-2">
+                        <Label for="edit-name">Name</Label>
+                        <Input
+                            id="edit-name"
+                            v-model="editForm.name"
+                            @change="editForm.validate('name')"
+                            type="text"
+                        />
+                        <InputError :message="editForm.errors.name" />
+                    </div>
+                    <div class="grid gap-2" v-if="editForm.created_at">
+                        <Label for="edit-created">Created at</Label>
+                        <Input
+                            id="edit-created"
+                            v-model="editForm.created_at"
+                            type="text"
+                            readonly
+                            disabled
+                        />
+                    </div>
+                    <div class="grid gap-2" v-if="editForm.updated_at">
+                        <Label for="edit-updated">Updated at</Label>
+                        <Input
+                            id="edit-updated"
+                            v-model="editForm.updated_at"
+                            type="text"
+                            readonly
+                            disabled
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            @click="isEditOpen = false"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            :disabled="editForm.processing"
+                            class="cursor-pointer"
+                        >
+                            Update
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Show Dialog -->
+        <Dialog v-model:open="isShowOpen">
+            <DialogContent class="sm:max-w-[500px]">
+                <DialogHeader>
+                    <DialogTitle>Permission Details</DialogTitle>
+                    <DialogDescription>
+                        View permission information.
+                    </DialogDescription>
+                </DialogHeader>
+                <div class="space-y-4" v-if="selectedPermission">
+                    <div class="grid gap-2">
+                        <Label>ID</Label>
+                        <Input
+                            :model-value="selectedPermission.id"
+                            type="text"
+                            readonly
+                            disabled
+                        />
+                    </div>
+                    <div class="grid gap-2">
+                        <Label>Name</Label>
+                        <Input
+                            :model-value="selectedPermission.name"
+                            type="text"
+                            readonly
+                            disabled
+                        />
+                    </div>
+                    <div
+                        class="grid gap-2"
+                        v-if="selectedPermission.created_at"
+                    >
+                        <Label>Created at</Label>
+                        <Input
+                            :model-value="selectedPermission.created_at"
+                            type="text"
+                            readonly
+                            disabled
+                        />
+                    </div>
+                    <div
+                        class="grid gap-2"
+                        v-if="selectedPermission.updated_at"
+                    >
+                        <Label>Updated at</Label>
+                        <Input
+                            :model-value="selectedPermission.updated_at"
+                            type="text"
+                            readonly
+                            disabled
+                        />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        @click="isShowOpen = false"
+                    >
+                        Close
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Import Dialog -->
+        <Dialog v-model:open="isImportOpen">
+            <DialogContent class="sm:max-w-[500px]">
+                <DialogHeader>
+                    <DialogTitle>Import Permissions</DialogTitle>
+                    <DialogDescription>
+                        Upload an Excel file to import permissions.
+                    </DialogDescription>
+                </DialogHeader>
+                <form @submit.prevent="submitImport" class="space-y-4">
+                    <div class="grid gap-2">
+                        <Label for="import-file">File</Label>
+                        <Input
+                            id="import-file"
+                            type="file"
+                            accept=".xlsx"
+                            @change="onFileChange"
+                        />
+                        <InputError :message="importForm.errors.file" />
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            @click="isImportOpen = false"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            :disabled="importForm.processing"
+                            class="cursor-pointer"
+                        >
+                            Import
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
     </AppLayout>
 </template>
