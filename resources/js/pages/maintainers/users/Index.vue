@@ -384,7 +384,11 @@ useFlashWatcher();
                         Update the user information.
                     </DialogDescription>
                 </DialogHeader>
-                <form @submit.prevent="submitEdit" class="space-y-4">
+                <form
+                    @submit.prevent="submitEdit"
+                    class="space-y-4"
+                    autocomplete="off"
+                >
                     <div class="grid gap-2">
                         <Label for="edit-id">ID</Label>
                         <Input
@@ -412,6 +416,8 @@ useFlashWatcher();
                             v-model="editForm.email"
                             @change="editForm.validate('email')"
                             type="email"
+                            name="edit-email"
+                            autocomplete="off"
                         />
                         <InputError :message="editForm.errors.email" />
                     </div>
@@ -422,6 +428,8 @@ useFlashWatcher();
                             v-model="editForm.password"
                             @change="editForm.validate('password')"
                             type="password"
+                            name="edit-password"
+                            autocomplete="new-password"
                             placeholder="Leave empty to keep current"
                         />
                         <InputError :message="editForm.errors.password" />
