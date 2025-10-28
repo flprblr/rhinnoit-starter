@@ -132,9 +132,7 @@ useFlashWatcher();
                         </Button>
                     </div>
                 </div>
-                <!-- <div class="flex items-center gap-4">
-                        <Button :disabled="form.processing">Update</Button>
-                    </div> -->
+
                 <div class="flex items-center gap-4">
                     <Button :disabled="form.processing" class="cursor-pointer"
                         >Update</Button

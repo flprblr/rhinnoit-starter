@@ -147,7 +147,7 @@ const form = useForm({
 
                 <div class="flex items-center gap-4">
                     <Link :href="editUser(props.user.id).url">
-                        <Button size="sm" type="button" class="cursor-pointer"
+                        <Button type="button" class="cursor-pointer"
                             >Edit</Button
                         >
                     </Link>

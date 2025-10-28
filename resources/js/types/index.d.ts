@@ -48,14 +48,10 @@ export type TableColumn<Row = Record<string, unknown>> = {
     formatter?: (value: unknown, row: Row) => unknown;
 };
 
-export type RowAction<Row = Record<string, unknown>> = {
+export type RowAction = {
     key: 'show' | 'edit' | 'delete' | string;
     label: string;
     can?: string;
-    type: 'route' | 'emit';
-    route?: string;
-    paramFrom?: keyof Row | string;
     icon?: Component;
     confirm?: { title: string; description: string };
-    method?: 'get' | 'post' | 'put' | 'patch' | 'delete';
 };

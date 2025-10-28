@@ -11,10 +11,23 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationNext,
+    PaginationPrevious,
+} from '@/components/ui/pagination';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import type { RowAction, TableColumn } from '@/types';
-import { router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 const props = withDefaults(
@@ -28,7 +41,6 @@ const props = withDefaults(
         actionsLabel?: string;
         showActions?: boolean;
         rowActions?: RowAction[];
-        indexRoute?: string; // e.g. 'maintainers.users.index'
     }>(),
     {
         itemsPerPage: 10,
@@ -41,7 +53,10 @@ const props = withDefaults(
 
 const emit = defineEmits<{
     (e: 'update:page', value: number): void;
-    (e: 'row:action', payload: { key: string; id: string | number; item: any }): void;
+    (
+        e: 'row:action',
+        payload: { key: string; id: string | number; item: any },
+    ): void;
 }>();
 
 const isConfirmOpen = ref(false);
@@ -57,26 +72,18 @@ const handleActionClick = (action: RowAction, item: any) => {
         isConfirmOpen.value = true;
         return;
     }
-    if (action.type === 'route' && action.route) {
-        const param = action.paramFrom ? (item as any)[action.paramFrom as any] : (item as any)[props.rowKey as any];
-        const method = action.method ?? 'get';
-        router.visit(route(action.route as any, param), { method });
-        return;
-    }
-    emit('row:action', { key: action.key, id: (item as any)[props.rowKey as any], item });
+    emit('row:action', {
+        key: action.key,
+        id: (item as any)[props.rowKey as any],
+        item,
+    });
 };
 
 const confirmAction = () => {
     if (pendingAction.value) {
         const { action, item } = pendingAction.value;
         const id = (item as any)[props.rowKey as any];
-        if (action.type === 'route' && action.route) {
-            const param = action.paramFrom ? (item as any)[action.paramFrom as any] : id;
-            const method = action.method ?? 'get';
-            router.visit(route(action.route as any, param), { method });
-        } else {
-            emit('row:action', { key: action.key, id, item });
-        }
+        emit('row:action', { key: action.key, id, item });
     }
     isConfirmOpen.value = false;
     pendingAction.value = null;
@@ -97,18 +104,50 @@ defineSlots<{
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead v-for="col in props.columns" :key="String(col.field)" :class="col.class">{{ col.label }}</TableHead>
-                    <TableHead v-if="props.showActions && (props.actionsLabel || (props.rowActions && props.rowActions.length))" class="text-right">
+                    <TableHead
+                        v-for="col in props.columns"
+                        :key="String(col.field)"
+                        :class="col.class"
+                        >{{ col.label }}</TableHead
+                    >
+                    <TableHead
+                        v-if="
+                            props.showActions &&
+                            (props.actionsLabel ||
+                                (props.rowActions && props.rowActions.length))
+                        "
+                        class="text-right"
+                    >
                         {{ props.actionsLabel ?? 'Action' }}
                     </TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
-                <TableRow v-for="item in props.items" :key="(item as any)[props.rowKey]">
-                    <TableCell v-for="col in props.columns" :key="String(col.field)">
-                        {{ col.formatter ? col.formatter(getCellValue(item, col.field as any), item) : getCellValue(item, col.field as any) }}
+                <TableRow
+                    v-for="item in props.items"
+                    :key="(item as any)[props.rowKey]"
+                >
+                    <TableCell
+                        v-for="col in props.columns"
+                        :key="String(col.field)"
+                    >
+                        {{
+                            col.formatter
+                                ? col.formatter(
+                                      getCellValue(item, col.field as any),
+                                      item,
+                                  )
+                                : getCellValue(item, col.field as any)
+                        }}
                     </TableCell>
-                    <TableCell v-if="props.showActions && props.rowActions && props.rowActions.length" class="text-right">
+                    <TableCell
+                        v-if="
+                            props.showActions &&
+                            props.rowActions &&
+                            props.rowActions.length
+                        "
+                        class="text-right"
+                    >
                         <div class="flex items-center justify-end gap-3">
                             <Button
                                 v-for="(action, idx) in props.rowActions"
@@ -119,12 +158,19 @@ defineSlots<{
                                 v-can="action.can as any"
                                 @click="handleActionClick(action, item)"
                             >
-                                <component v-if="action.icon" :is="action.icon" class="mr-1 h-4 w-4" />
+                                <component
+                                    v-if="action.icon"
+                                    :is="action.icon"
+                                    class="mr-1 h-4 w-4"
+                                />
                                 {{ action.label }}
                             </Button>
                         </div>
                     </TableCell>
-                    <TableCell v-else-if="props.showActions && props.actionsLabel" class="text-right">
+                    <TableCell
+                        v-else-if="props.showActions && props.actionsLabel"
+                        class="text-right"
+                    >
                         <slot name="actions" :item="item" />
                     </TableCell>
                 </TableRow>
@@ -136,24 +182,23 @@ defineSlots<{
             :items-per-page="props.itemsPerPage"
             :total="props.total"
             :default-page="props.currentPage"
-            @update:page="
-                (p) => {
-                    if (props.indexRoute) {
-                        router.get(route(props.indexRoute as any), { page: p }, { preserveScroll: true, preserveState: true, replace: true });
-                    } else {
-                        emit('update:page', p);
-                    }
-                }
-            "
+            @update:page="(p) => emit('update:page', p)"
         >
             <PaginationContent v-slot="{ items }">
                 <PaginationPrevious />
 
                 <template v-for="(item, index) in items" :key="index">
-                    <PaginationItem v-if="item.type === 'page'" :value="item.value" :is-active="item.value === page">
+                    <PaginationItem
+                        v-if="item.type === 'page'"
+                        :value="item.value"
+                        :is-active="item.value === page"
+                    >
                         {{ item.value }}
                     </PaginationItem>
-                    <PaginationEllipsis v-else-if="item.type === 'ellipsis'" :index="index" />
+                    <PaginationEllipsis
+                        v-else-if="item.type === 'ellipsis'"
+                        :index="index"
+                    />
                 </template>
 
                 <PaginationNext />
@@ -163,14 +208,27 @@ defineSlots<{
         <AlertDialog v-model:open="isConfirmOpen">
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>{{ pendingAction?.action.confirm?.title ?? '¿Estás seguro?' }}</AlertDialogTitle>
+                    <AlertDialogTitle>{{
+                        pendingAction?.action.confirm?.title ?? '¿Estás seguro?'
+                    }}</AlertDialogTitle>
                     <AlertDialogDescription>
-                        {{ pendingAction?.action.confirm?.description ?? 'Esta acción no se puede deshacer.' }}
+                        {{
+                            pendingAction?.action.confirm?.description ??
+                            'Esta acción no se puede deshacer.'
+                        }}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel @click="cancelAction" class="cursor-pointer">Cancelar</AlertDialogCancel>
-                    <AlertDialogAction @click="confirmAction" class="cursor-pointer">Confirmar</AlertDialogAction>
+                    <AlertDialogCancel
+                        @click="cancelAction"
+                        class="cursor-pointer"
+                        >Cancelar</AlertDialogCancel
+                    >
+                    <AlertDialogAction
+                        @click="confirmAction"
+                        class="cursor-pointer"
+                        >Confirmar</AlertDialogAction
+                    >
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

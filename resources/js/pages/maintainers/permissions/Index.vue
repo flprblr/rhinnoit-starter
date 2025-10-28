@@ -6,9 +6,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type RowAction, type TableColumn } from '@/types';
 import { Eye, SquarePen, Trash2 } from 'lucide-vue-next';
 
-import HeadingSmall from '@/components/HeadingSmall.vue';
+import HeaderTable from '@/components/HeaderTable.vue';
 import SimpleTable from '@/components/SimpleTable.vue';
-import { Button } from '@/components/ui/button';
 import {
     create as createPermission,
     destroy as destroyPermission,
@@ -46,21 +45,18 @@ const rowActions: RowAction[] = [
         label: 'Show',
         icon: Eye,
         can: 'permissions.show',
-        type: 'emit',
     },
     {
         key: 'edit',
         label: 'Edit',
         icon: SquarePen,
         can: 'permissions.edit',
-        type: 'emit',
     },
     {
         key: 'delete',
         label: 'Delete',
         icon: Trash2,
         can: 'permissions.destroy',
-        type: 'emit',
         confirm: {
             title: '¿Estás seguro?',
             description:
@@ -114,45 +110,16 @@ const onChangePage = (p: number) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head :title="breadcrumbs[0].title" />
         <div class="space-y-3 p-4">
-            <div
-                class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
-            >
-                <HeadingSmall
-                    :title="breadcrumbs[0].title"
-                    :description="breadcrumbs[0].description"
-                />
-                <div class="flex gap-2">
-                    <Button
-                        v-if="headerActions.includes('create')"
-                        variant="outline"
-                        class="cursor-pointer"
-                        v-can="'permissions.create'"
-                        @click="goCreate"
-                    >
-                        Create
-                    </Button>
+            <HeaderTable
+                :title="breadcrumbs[0].title"
+                :description="breadcrumbs[0].description"
+                :actions="headerActions"
+                resource="permissions"
+                @create="goCreate"
+                @export="downloadExport"
+                @import="goImport"
+            />
 
-                    <Button
-                        v-if="headerActions.includes('export')"
-                        variant="outline"
-                        class="cursor-pointer"
-                        v-can="'permissions.export'"
-                        @click="downloadExport"
-                    >
-                        Export
-                    </Button>
-
-                    <Button
-                        v-if="headerActions.includes('import')"
-                        variant="outline"
-                        class="cursor-pointer"
-                        v-can="'permissions.import'"
-                        @click="goImport"
-                    >
-                        Import
-                    </Button>
-                </div>
-            </div>
             <SimpleTable
                 :columns="columns"
                 :items="props.permissions.data"

@@ -67,9 +67,7 @@ useFlashWatcher();
                     />
                     <InputError :message="form.errors.name" />
                 </div>
-                <!-- <div class="flex items-center gap-4">
-                        <Button :disabled="form.processing">Create</Button>
-                    </div> -->
+
                 <div class="flex items-center gap-4">
                     <Button :disabled="form.processing" class="cursor-pointer"
                         >Create</Button

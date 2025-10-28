@@ -173,7 +173,7 @@ useFlashWatcher();
                                 :model-value="
                                     form.roles.includes(Number(role.id))
                                 "
-                                @update:modelValue="toggleRole(role.id)"
+                                @update:model-value="toggleRole(role.id)"
                             />
                             <Label
                                 :for="`role-${role.id}`"
@@ -185,9 +185,7 @@ useFlashWatcher();
                     </div>
                     <InputError :message="form.errors.roles" />
                 </div>
-                <!-- <div class="flex items-center gap-4">
-                        <Button :disabled="form.processing">Update</Button>
-                    </div> -->
+
                 <div class="flex items-center gap-4">
                     <Button :disabled="form.processing" class="cursor-pointer"
                         >Update</Button

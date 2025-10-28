@@ -108,17 +108,15 @@ const form = useForm({
                 >
                     <Label>Roles with: {{ props.permission.name }}</Label>
                     <div class="flex flex-wrap gap-2">
-                        <div class="flex flex-wrap gap-2">
-                            <Button
-                                size="sm"
-                                v-for="role in props.permission.roles"
-                                :key="role.id"
-                                variant="outline"
-                                class="cursor-pointer"
-                            >
-                                {{ role.name }}
-                            </Button>
-                        </div>
+                        <Button
+                            size="sm"
+                            v-for="role in props.permission.roles"
+                            :key="role.id"
+                            variant="outline"
+                            class="cursor-pointer"
+                        >
+                            {{ role.name }}
+                        </Button>
                     </div>
                 </div>
 

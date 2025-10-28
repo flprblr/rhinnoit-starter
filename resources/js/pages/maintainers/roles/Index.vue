@@ -6,9 +6,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type RowAction, type TableColumn } from '@/types';
 import { Eye, SquarePen, Trash2 } from 'lucide-vue-next';
 
-import HeadingSmall from '@/components/HeadingSmall.vue';
+import HeaderTable from '@/components/HeaderTable.vue';
 import SimpleTable from '@/components/SimpleTable.vue';
-import { Button } from '@/components/ui/button';
 import {
     create as createRole,
     destroy as destroyRole,
@@ -41,20 +40,18 @@ const columns: TableColumn[] = [
 const headerActions = ['create', 'export', 'import'] as const;
 
 const rowActions: RowAction[] = [
-    { key: 'show', label: 'Show', icon: Eye, can: 'roles.show', type: 'emit' },
+    { key: 'show', label: 'Show', icon: Eye, can: 'roles.show' },
     {
         key: 'edit',
         label: 'Edit',
         icon: SquarePen,
         can: 'roles.edit',
-        type: 'emit',
     },
     {
         key: 'delete',
         label: 'Delete',
         icon: Trash2,
         can: 'roles.destroy',
-        type: 'emit',
         confirm: {
             title: '¿Estás seguro?',
             description: 'Esto eliminará permanentemente el rol seleccionado.',
@@ -107,43 +104,16 @@ const onChangePage = (p: number) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head :title="breadcrumbs[0].title" />
         <div class="space-y-3 p-4">
-            <div
-                class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
-            >
-                <HeadingSmall
-                    :title="breadcrumbs[0].title"
-                    :description="breadcrumbs[0].description"
-                />
-                <div class="flex gap-2">
-                    <Button
-                        v-if="headerActions.includes('create')"
-                        variant="outline"
-                        class="cursor-pointer"
-                        v-can="'roles.create'"
-                        @click="goCreate"
-                    >
-                        Create
-                    </Button>
-                    <Button
-                        v-if="headerActions.includes('export')"
-                        variant="outline"
-                        class="cursor-pointer"
-                        v-can="'roles.export'"
-                        @click="downloadExport"
-                    >
-                        Export
-                    </Button>
-                    <Button
-                        v-if="headerActions.includes('import')"
-                        variant="outline"
-                        class="cursor-pointer"
-                        v-can="'roles.import'"
-                        @click="goImport"
-                    >
-                        Import
-                    </Button>
-                </div>
-            </div>
+            <HeaderTable
+                :title="breadcrumbs[0].title"
+                :description="breadcrumbs[0].description"
+                :actions="headerActions"
+                resource="roles"
+                @create="goCreate"
+                @export="downloadExport"
+                @import="goImport"
+            />
+
             <SimpleTable
                 :columns="columns"
                 :items="props.roles.data"
