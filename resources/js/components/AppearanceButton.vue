@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { Monitor, Moon, Sun } from 'lucide-vue-next';
+
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAppearance } from '@/composables/useAppearance';
-import { Monitor, Moon, Sun } from 'lucide-vue-next';
 
 const { appearance, updateAppearance } = useAppearance();
 

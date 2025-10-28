@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
+
 import { SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
 
 interface Props {
     items: NavItem[];

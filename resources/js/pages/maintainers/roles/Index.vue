@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
-import { useForm } from 'laravel-precognition-vue-inertia';
 import { ref } from 'vue';
 
-import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, router } from '@inertiajs/vue3';
 
-import { type BreadcrumbItem, type RowAction, type TableColumn } from '@/types';
+import { useForm } from 'laravel-precognition-vue-inertia';
+
 import { Eye, SquarePen, Trash2 } from 'lucide-vue-next';
 
 import HeaderTable from '@/components/HeaderTable.vue';
@@ -17,6 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useFlashWatcher } from '@/composables/useFlashWatcher';
+import AppLayout from '@/layouts/AppLayout.vue';
 import {
     destroy as destroyRole,
     exportMethod as exportRoles,
@@ -25,6 +25,7 @@ import {
     update as updateRole,
 } from '@/routes/maintainers/roles';
 import { form as importRolesForm } from '@/routes/maintainers/roles/import';
+import { type BreadcrumbItem, type RowAction, type TableColumn } from '@/types';
 
 interface Permission {
     id: number | string;

@@ -1,4 +1,10 @@
 <script setup lang="ts">
+import { onUnmounted, ref } from 'vue';
+
+import { Form, Head } from '@inertiajs/vue3';
+
+import { ShieldBan, ShieldCheck } from 'lucide-vue-next';
+
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import TwoFactorRecoveryCodes from '@/components/TwoFactorRecoveryCodes.vue';
 import TwoFactorSetupModal from '@/components/TwoFactorSetupModal.vue';
@@ -9,9 +15,6 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { disable, enable, show } from '@/routes/two-factor';
 import { BreadcrumbItem } from '@/types';
-import { Form, Head } from '@inertiajs/vue3';
-import { ShieldBan, ShieldCheck } from 'lucide-vue-next';
-import { onUnmounted, ref } from 'vue';
 
 interface Props {
     requiresConfirmation?: boolean;

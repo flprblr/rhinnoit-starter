@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { onBeforeUnmount, onMounted, ref } from 'vue';
+
+import { usePage } from '@inertiajs/vue3';
+
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/sonner';
-import { usePage } from '@inertiajs/vue3';
-import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 interface Props {
     variant?: 'header' | 'sidebar';

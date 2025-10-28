@@ -1,5 +1,6 @@
 <script setup lang="ts">
-defineOptions({ name: 'SimpleTable' });
+import { ref } from 'vue';
+
 import {
     AlertDialog,
     AlertDialogAction,
@@ -14,7 +15,8 @@ import { Button } from '@/components/ui/button';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { RowAction, TableColumn } from '@/types';
-import { ref } from 'vue';
+
+defineOptions({ name: 'SimpleTable' });
 
 const props = withDefaults(
     defineProps<{

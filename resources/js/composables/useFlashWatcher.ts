@@ -1,7 +1,10 @@
-import type { Flash } from '@/types';
-import { usePage } from '@inertiajs/vue3';
 import { watch } from 'vue';
+
+import { usePage } from '@inertiajs/vue3';
+
 import { toast } from 'vue-sonner';
+
+import type { Flash } from '@/types';
 
 export function useFlashWatcher() {
     const page = usePage();

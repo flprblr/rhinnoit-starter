@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { onBeforeUnmount, onMounted, ref } from 'vue';
+
 import AppContent from '@/components/AppContent.vue';
 import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarHeader from '@/components/AppSidebarHeader.vue';
 import { Toaster } from '@/components/ui/sonner';
 import type { BreadcrumbItemType } from '@/types';
-import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 interface Props {
     breadcrumbs?: BreadcrumbItemType[];

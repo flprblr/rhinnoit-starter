@@ -1,5 +1,6 @@
-import type { AppPageProps, User } from '@/types';
 import { usePage } from '@inertiajs/vue3';
+
+import type { AppPageProps, User } from '@/types';
 
 export type Can = (permission: string | string[]) => boolean;
 

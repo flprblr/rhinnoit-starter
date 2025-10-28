@@ -1,8 +1,10 @@
 <script setup lang="ts">
-defineOptions({ name: 'HeaderTable' });
+import { Download, Plus, Upload } from 'lucide-vue-next';
+
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import { Button } from '@/components/ui/button';
-import { Download, Plus, Upload } from 'lucide-vue-next';
+
+defineOptions({ name: 'HeaderTable' });
 
 type HeaderAction = 'create' | 'export' | 'import';
 
