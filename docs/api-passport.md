@@ -2,47 +2,54 @@
 
 API para empresas externas que se conectan a nuestro sistema. Usa OAuth2 para autenticación segura.
 
-### Cómo funciona
+---
 
-1. **La empresa externa se registra** y recibe `client_id` y `client_secret`
-2. **Obtiene un token** usando esos credenciales + email/password de un usuario
-3. **Usa el token** en todas las solicitudes con `Authorization: Bearer {token}`
-4. **Puede refrescar el token** cuando expire usando el `refresh_token`
+## 👨‍💼 Para Administradores
 
-### ¿Qué credenciales necesito?
+### Cómo crear credenciales para una empresa externa
 
-- **Client ID**: Se asigna cuando la empresa se registra
-- **Client Secret**: Secreto que se comparte con la empresa (debe mantenerse seguro)
-- **Username**: Email del usuario
+1. **Ir al CRUD de Clientes OAuth** en el panel administrativo (o usar el comando si aún no existe el CRUD):
+
+    ```bash
+    php artisan passport:client --password
+    ```
+
+    Esto genera:
+    - `client_id`: Identificador único
+    - `client_secret`: Secreto del cliente
+
+2. **Ir al CRUD de Usuarios** en el panel administrativo
+
+3. **Crear un nuevo usuario** para la empresa externa con:
+    - Nombre completo
+    - Email único
+    - Contraseña segura
+    - Roles (si aplica)
+
+4. **Compartir las credenciales** con la empresa externa:
+    - `client_id` del cliente OAuth creado
+    - `client_secret` del cliente OAuth
+    - Email del usuario creado
+    - Contraseña del usuario
+
+**Nota**: La empresa externa ya puede usar estas credenciales para obtener tokens. No necesitas hacer nada más.
+
+---
+
+## 🏢 Para Consumidores (Empresas Externas)
+
+### Credenciales que necesitas
+
+El administrador te habrá proporcionado:
+
+- **Client ID**: Identificador de tu cliente OAuth
+- **Client Secret**: Secreto del cliente (mantén esto seguro)
+- **Username**: Email del usuario asignado
 - **Password**: Contraseña del usuario
 
-**Nota**: Primero debes registrarte como empresa externa para obtener tu `client_id` y `client_secret`.
+### Cómo usar la API
 
-### Preparación inicial
-
-El administrador del sistema debe ejecutar:
-
-```bash
-php artisan passport:install
-php artisan passport:client --password
-```
-
-Esto genera las credenciales que se comparten con la empresa externa:
-
-- `client_id`: Ejemplo: `12345`
-- `client_secret`: Ejemplo: `abc123xyz789secret`
-
-### Cómo usar el token
-
-Después de obtener el token, úsalo así en todas las solicitudes:
-
-```
-Authorization: Bearer {access_token}
-```
-
-### Endpoints
-
-#### 1. Obtener Token
+#### Paso 1: Obtener tu token de acceso
 
 **POST** `/api/passport/token`
 
@@ -57,6 +64,14 @@ password=tu_password
 scope=
 ```
 
+**Ejemplo curl**:
+
+```bash
+curl -X POST http://localhost:8000/api/passport/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=password&client_id=12345&client_secret=abc123&username=usuario@empresa.com&password=tu_password&scope="
+```
+
 **Respuesta**:
 
 ```json
@@ -69,56 +84,26 @@ scope=
 }
 ```
 
-**Ejemplo curl**:
+**Guarda estos valores**:
 
-```bash
-curl -X POST http://localhost:8000/api/passport/token \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "grant_type=password&client_id=12345&client_secret=abc123&username=usuario@empresa.com&password=tu_password&scope="
-```
+- `token`: Tu token de acceso (lo usarás en cada solicitud)
+- `refresh_token`: Para renovar el token cuando expire
 
-#### 2. Refrescar Token (cuando expire)
+#### Paso 2: Usar el token en tus solicitudes
 
-**POST** `/api/passport/token`
-
-**Body (form-urlencoded)**:
-
-```
-grant_type=refresh_token
-refresh_token={TU_REFRESH_TOKEN}
-client_id={TU_CLIENT_ID}
-client_secret={TU_CLIENT_SECRET}
-scope=
-```
-
-**Respuesta** (igual que obtener token, pero con nuevos tokens):
-
-```json
-{
-    "success": true,
-    "token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
-    "token_type": "Bearer",
-    "expires_in": 31536000,
-    "refresh_token": "def50200xyz..."
-}
-```
-
-**Ejemplo curl**:
-
-```bash
-curl -X POST http://localhost:8000/api/passport/token \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "grant_type=refresh_token&refresh_token={REFRESH_TOKEN}&client_id=12345&client_secret=abc123&scope="
-```
-
-#### 3. Obtener Usuario Actual
-
-**GET** `/api/passport/user`
-
-**Headers**:
+Agrega el header `Authorization` en todas las solicitudes protegidas:
 
 ```
 Authorization: Bearer {access_token}
+```
+
+#### Paso 3: Consumir endpoints protegidos
+
+**Ejemplo - Obtener usuario actual**:
+
+```bash
+curl -X GET http://localhost:8000/api/passport/user \
+  -H "Authorization: Bearer {access_token}"
 ```
 
 **Respuesta**:
@@ -134,50 +119,58 @@ Authorization: Bearer {access_token}
 }
 ```
 
+#### Paso 4: Refrescar el token (cuando expire)
+
+Cuando tu `access_token` expire, usa el `refresh_token` para obtener uno nuevo sin volver a autenticarte:
+
+**POST** `/api/passport/token`
+
+**Body (form-urlencoded)**:
+
+```
+grant_type=refresh_token
+refresh_token={TU_REFRESH_TOKEN}
+client_id={TU_CLIENT_ID}
+client_secret={TU_CLIENT_SECRET}
+scope=
+```
+
 **Ejemplo curl**:
 
 ```bash
-curl -X GET http://localhost:8000/api/passport/user \
-  -H "Authorization: Bearer {access_token}"
+curl -X POST http://localhost:8000/api/passport/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=refresh_token&refresh_token={REFRESH_TOKEN}&client_id=12345&client_secret=abc123&scope="
 ```
+
+**Respuesta**: Igual que obtener token, pero con nuevos valores de `token` y `refresh_token`.
+
+### Todos los endpoints disponibles
+
+#### 1. Obtener Token
+
+**POST** `/api/passport/token`  
+Obtiene un nuevo token de acceso (usar `grant_type=password`)
+
+#### 2. Refrescar Token
+
+**POST** `/api/passport/token`  
+Renueva tu token cuando expire (usar `grant_type=refresh_token`)
+
+#### 3. Obtener Usuario Actual
+
+**GET** `/api/passport/user`  
+Requiere autenticación: `Authorization: Bearer {access_token}`
 
 #### 4. Revocar Token Actual
 
-**POST** `/api/passport/revoke`
-
-**Headers**:
-
-```
-Authorization: Bearer {access_token}
-```
-
-**Respuesta**:
-
-```json
-{
-    "success": true,
-    "message": "Token revocado exitosamente."
-}
-```
+**POST** `/api/passport/revoke`  
+Requiere autenticación: `Authorization: Bearer {access_token}`
 
 #### 5. Revocar Todos los Tokens
 
-**POST** `/api/passport/revoke-all`
-
-**Headers**:
-
-```
-Authorization: Bearer {access_token}
-```
-
-**Respuesta**:
-
-```json
-{
-    "success": true,
-    "message": "Todos los tokens han sido revocados exitosamente."
-}
-```
+**POST** `/api/passport/revoke-all`  
+Requiere autenticación: `Authorization: Bearer {access_token}`
 
 ### Errores comunes
 
@@ -191,4 +184,4 @@ Authorization: Bearer {access_token}
 - **Formato del token**: JWT (JSON Web Token)
 - **Cómo obtenerlo**: `client_id` + `client_secret` + email + password
 - **Cómo usarlo**: `Authorization: Bearer {access_token}` en headers
-- **Ventaja**: Incluye `refresh_token` para renovar sin volver a autenticarse
+- **Ventaja**: Incluye `refresh_token` para renovar sin volver a autenticarte

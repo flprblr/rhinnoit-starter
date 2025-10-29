@@ -2,31 +2,40 @@
 
 API para uso interno dentro de la empresa. Autenticación simple con tokens personales.
 
-### Cómo funciona
+---
 
-1. **Obtienes un token** enviando email y contraseña
-2. **Usas el token** en todas las solicitudes agregando `Authorization: Bearer {token}` en los headers
-3. **El token funciona** hasta que lo revoques o expires
+## 👨‍💼 Para Administradores
 
-### ¿Qué credenciales necesito?
+### Cómo crear credenciales para un usuario interno
 
-- **Email**: Correo del usuario interno
-- **Password**: Contraseña del usuario
-- **Device Name**: Nombre que identifica tu aplicación/servicio (ej: "intranet", "backoffice")
+1. **Ir al CRUD de Usuarios** en el panel administrativo
+2. **Crear un nuevo usuario** con los siguientes datos:
+    - Nombre completo
+    - Email único
+    - Contraseña segura
+    - Roles (si aplica)
+3. **Compartir las credenciales** con el usuario interno:
+    - Email del usuario
+    - Contraseña asignada
+    - Indicar que deben usar un `device_name` único (ej: "intranet", "backoffice", "servicio-1")
 
-**No necesitas** `client_id` ni `client_secret`.
+**Nota**: El usuario interno ya puede usar estas credenciales para obtener tokens. No necesitas hacer nada más.
 
-### Cómo usar el token
+---
 
-Después de obtener el token, úsalo así en todas las solicitudes:
+## 👤 Para Consumidores (Usuarios Internos)
 
-```
-Authorization: Bearer {tu_token_aqui}
-```
+### Credenciales que necesitas
 
-### Endpoints
+El administrador te habrá proporcionado:
 
-#### 1. Obtener Token
+- **Email**: Tu correo electrónico
+- **Password**: Tu contraseña
+- **Device Name**: Un nombre único para tu aplicación/servicio (ej: "intranet", "backoffice")
+
+### Cómo usar la API
+
+#### Paso 1: Obtener tu token
 
 **POST** `/api/sanctum/token`
 
@@ -34,10 +43,22 @@ Authorization: Bearer {tu_token_aqui}
 
 ```json
 {
-    "email": "usuario@empresa.com",
+    "email": "tu_email@empresa.com",
     "password": "tu_password",
     "device_name": "nombre-de-tu-app"
 }
+```
+
+**Ejemplo curl**:
+
+```bash
+curl -X POST http://localhost:8000/api/sanctum/token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "usuario@empresa.com",
+    "password": "tu_password",
+    "device_name": "intranet"
+  }'
 ```
 
 **Respuesta**:
@@ -55,26 +76,21 @@ Authorization: Bearer {tu_token_aqui}
 }
 ```
 
-**Ejemplo curl**:
+#### Paso 2: Usar el token en tus solicitudes
 
-```bash
-curl -X POST http://localhost:8000/api/sanctum/token \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "usuario@empresa.com",
-    "password": "tu_password",
-    "device_name": "intranet"
-  }'
-```
-
-#### 2. Obtener Usuario Actual
-
-**GET** `/api/sanctum/user`
-
-**Headers**:
+Agrega el header `Authorization` en todas las solicitudes protegidas:
 
 ```
 Authorization: Bearer {tu_token}
+```
+
+#### Paso 3: Consumir endpoints protegidos
+
+**Ejemplo - Obtener usuario actual**:
+
+```bash
+curl -X GET http://localhost:8000/api/sanctum/user \
+  -H "Authorization: Bearer {tu_token}"
 ```
 
 **Respuesta**:
@@ -90,50 +106,27 @@ Authorization: Bearer {tu_token}
 }
 ```
 
-**Ejemplo curl**:
+### Todos los endpoints disponibles
 
-```bash
-curl -X GET http://localhost:8000/api/sanctum/user \
-  -H "Authorization: Bearer {tu_token}"
-```
+#### 1. Obtener Token
+
+**POST** `/api/sanctum/token`  
+Obtiene un nuevo token de acceso.
+
+#### 2. Obtener Usuario Actual
+
+**GET** `/api/sanctum/user`  
+Requiere autenticación: `Authorization: Bearer {token}`
 
 #### 3. Revocar Token Actual
 
-**POST** `/api/sanctum/revoke`
-
-**Headers**:
-
-```
-Authorization: Bearer {tu_token}
-```
-
-**Respuesta**:
-
-```json
-{
-    "success": true,
-    "message": "Token revocado exitosamente."
-}
-```
+**POST** `/api/sanctum/revoke`  
+Requiere autenticación: `Authorization: Bearer {token}`
 
 #### 4. Revocar Todos los Tokens
 
-**POST** `/api/sanctum/revoke-all`
-
-**Headers**:
-
-```
-Authorization: Bearer {tu_token}
-```
-
-**Respuesta**:
-
-```json
-{
-    "success": true,
-    "message": "Todos los tokens han sido revocados exitosamente."
-}
-```
+**POST** `/api/sanctum/revoke-all`  
+Requiere autenticación: `Authorization: Bearer {token}`
 
 ### Errores comunes
 
