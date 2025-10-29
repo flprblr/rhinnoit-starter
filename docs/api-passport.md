@@ -6,33 +6,31 @@ API para empresas externas que se conectan a nuestro sistema. Usa OAuth2 para au
 
 ## 👨‍💼 Para Administradores
 
+**Requisito**: Debes tener el permiso `api.passport` para acceder al CRUD de gestión de clientes OAuth.
+
 ### Cómo crear credenciales para una empresa externa
 
-1. **Ir al CRUD de Clientes OAuth** en el panel administrativo (o usar el comando si aún no existe el CRUD):
+1. **Ir al CRUD de Clientes OAuth** en el panel administrativo
+    - Solo visible si tienes el permiso `api.passport`
 
-    ```bash
-    php artisan passport:client --password
-    ```
+2. **Crear un nuevo cliente OAuth** para la empresa externa:
+    - Nombre del cliente/empresa
+    - URL de redirección (si aplica)
+    - El sistema generará automáticamente:
+        - `client_id`: Identificador único del cliente
+        - `client_secret`: Secreto del cliente (mostrado una vez, guárdalo)
 
-    Esto genera:
-    - `client_id`: Identificador único
-    - `client_secret`: Secreto del cliente
-
-2. **Ir al CRUD de Usuarios** en el panel administrativo
-
-3. **Crear un nuevo usuario** para la empresa externa con:
-    - Nombre completo
-    - Email único
-    - Contraseña segura
-    - Roles (si aplica)
+3. **Crear o asignar un usuario** para ese cliente:
+    - Desde el CRUD de Usuarios, crear un nuevo usuario
+    - O asignar un usuario existente al cliente OAuth
 
 4. **Compartir las credenciales** con la empresa externa:
     - `client_id` del cliente OAuth creado
     - `client_secret` del cliente OAuth
-    - Email del usuario creado
-    - Contraseña del usuario
+    - Email del usuario asignado
+    - Contraseña del usuario asignado
 
-**Nota**: La empresa externa ya puede usar estas credenciales para obtener tokens. No necesitas hacer nada más.
+**Nota**: La empresa externa ya puede usar estas credenciales para obtener tokens. Los clientes OAuth quedan asociados al administrador que los creó y al usuario asignado.
 
 ---
 
@@ -44,8 +42,10 @@ El administrador te habrá proporcionado:
 
 - **Client ID**: Identificador de tu cliente OAuth
 - **Client Secret**: Secreto del cliente (mantén esto seguro)
-- **Username**: Email del usuario asignado
-- **Password**: Contraseña del usuario
+- **Username**: Email del usuario asignado a tu cliente
+- **Password**: Contraseña del usuario asignado
+
+**Importante**: Las empresas externas NO se registran. Un administrador con permiso `api.passport` crea tu cliente OAuth y usuario desde el CRUD.
 
 ### Cómo usar la API
 
@@ -185,3 +185,4 @@ Requiere autenticación: `Authorization: Bearer {access_token}`
 - **Cómo obtenerlo**: `client_id` + `client_secret` + email + password
 - **Cómo usarlo**: `Authorization: Bearer {access_token}` en headers
 - **Ventaja**: Incluye `refresh_token` para renovar sin volver a autenticarte
+- **Registro**: No hay auto-registro. Solo administradores con permiso `api.passport` pueden crear clientes OAuth.

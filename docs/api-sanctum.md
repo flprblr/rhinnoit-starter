@@ -6,20 +6,24 @@ API para uso interno dentro de la empresa. Autenticación simple con tokens pers
 
 ## 👨‍💼 Para Administradores
 
+**Requisito**: Debes tener el permiso `api.sanctum` para acceder al CRUD de gestión de tokens.
+
 ### Cómo crear credenciales para un usuario interno
 
-1. **Ir al CRUD de Usuarios** en el panel administrativo
-2. **Crear un nuevo usuario** con los siguientes datos:
-    - Nombre completo
-    - Email único
-    - Contraseña segura
-    - Roles (si aplica)
+1. **Ir al CRUD de API Sanctum** en el panel administrativo
+    - Solo visible si tienes el permiso `api.sanctum`
+
+2. **Crear credenciales para un usuario**:
+    - Seleccionar un usuario existente (o crear uno nuevo)
+    - Generar un token con un nombre/identificador (ej: "intranet-backoffice", "servicio-interno-1")
+    - El token quedará asociado a ese usuario
+
 3. **Compartir las credenciales** con el usuario interno:
     - Email del usuario
-    - Contraseña asignada
-    - Indicar que deben usar un `device_name` único (ej: "intranet", "backoffice", "servicio-1")
+    - Contraseña del usuario (la que tienes configurada)
+    - Token generado (o indicar que usen su email/password para generar tokens)
 
-**Nota**: El usuario interno ya puede usar estas credenciales para obtener tokens. No necesitas hacer nada más.
+**Nota**: El usuario interno puede usar su email/password para obtener tokens, o puedes generar tokens predefinidos desde el CRUD y compartirlos directamente.
 
 ---
 
@@ -29,9 +33,11 @@ API para uso interno dentro de la empresa. Autenticación simple con tokens pers
 
 El administrador te habrá proporcionado:
 
-- **Email**: Tu correo electrónico
-- **Password**: Tu contraseña
+- **Email**: Tu correo electrónico del usuario creado
+- **Password**: Tu contraseña asignada
 - **Device Name**: Un nombre único para tu aplicación/servicio (ej: "intranet", "backoffice")
+
+**Importante**: Los usuarios NO se registran. Un administrador con permiso `api.sanctum` crea tu usuario y credenciales desde el CRUD.
 
 ### Cómo usar la API
 
@@ -139,3 +145,4 @@ Requiere autenticación: `Authorization: Bearer {token}`
 - **Formato del token**: Texto plano simple
 - **Cómo obtenerlo**: Email + Password + Device Name
 - **Cómo usarlo**: `Authorization: Bearer {token}` en headers
+- **Registro**: No hay auto-registro. Solo administradores con permiso `api.sanctum` pueden crear credenciales.
