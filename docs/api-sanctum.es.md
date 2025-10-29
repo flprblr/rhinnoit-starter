@@ -1,33 +1,31 @@
-## API Interna - Sanctum
-
-API para uso interno dentro de la empresa. Autenticación simple con tokens personales.
+## Documentación de API - Sanctum
 
 ---
 
-## 👨‍💼 Para Administradores
+## Administradores
 
 **Requisito**: Debes tener el permiso `api.sanctum` para acceder al CRUD de gestión de tokens.
 
-### Cómo crear credenciales para un usuario interno
+### Cómo crear credenciales para un usuario
 
 1. **Ir al CRUD de API Sanctum** en el panel administrativo
-    - Solo visible si tienes el permiso `api.sanctum`
+   - Solo visible si tienes el permiso `api.sanctum`
 
 2. **Crear credenciales para un usuario**:
-    - Seleccionar un usuario existente (o crear uno nuevo)
-    - Generar un token con un nombre/identificador (ej: "intranet-backoffice", "servicio-interno-1")
-    - El token quedará asociado a ese usuario
+   - Seleccionar un usuario existente (o crear uno nuevo)
+   - Generar un token con un nombre/identificador (ej: "intranet-backoffice", "servicio-interno-1")
+   - El token quedará asociado a ese usuario
 
-3. **Compartir las credenciales** con el usuario interno:
-    - Email del usuario
-    - Contraseña del usuario (la que tienes configurada)
-    - Token generado (o indicar que usen su email/password para generar tokens)
+3. **Compartir las credenciales** con el usuario:
+   - Email del usuario
+   - Contraseña del usuario (la que tienes configurada)
+   - Token generado (o indicar que usen su email/password para generar tokens)
 
 **Nota**: El usuario interno puede usar su email/password para obtener tokens, o puedes generar tokens predefinidos desde el CRUD y compartirlos directamente.
 
 ---
 
-## 👤 Para Consumidores (Usuarios Internos)
+## Consumidores
 
 ### Credenciales que necesitas
 
@@ -37,7 +35,7 @@ El administrador te habrá proporcionado:
 - **Password**: Tu contraseña asignada
 - **Device Name**: Un nombre único para tu aplicación/servicio (ej: "intranet", "backoffice")
 
-**Importante**: Los usuarios NO se registran. Un administrador con permiso `api.sanctum` crea tu usuario y credenciales desde el CRUD.
+**Importante**: Los usuarios no se registran mediante autoservicio. Un administrador con permiso `api.sanctum` crea las credenciales.
 
 ### Cómo usar la API
 
@@ -49,9 +47,9 @@ El administrador te habrá proporcionado:
 
 ```json
 {
-    "email": "tu_email@empresa.com",
-    "password": "tu_password",
-    "device_name": "nombre-de-tu-app"
+  "email": "tu_email@empresa.com",
+  "password": "tu_password",
+  "device_name": "nombre-de-tu-app"
 }
 ```
 
@@ -59,14 +57,10 @@ El administrador te habrá proporcionado:
 
 ```json
 {
-    "success": true,
-    "token": "1|abcdef123456...",
-    "token_type": "Bearer",
-    "user": {
-        "id": 1,
-        "name": "Juan Pérez",
-        "email": "usuario@empresa.com"
-    }
+  "success": true,
+  "token": "1|abcdef123456...",
+  "token_type": "Bearer",
+  "user": { "id": 1, "name": "Juan Pérez", "email": "usuario@empresa.com" }
 }
 ```
 
@@ -84,12 +78,8 @@ Authorization: Bearer {tu_token}
 
 ```json
 {
-    "success": true,
-    "user": {
-        "id": 1,
-        "name": "Juan Pérez",
-        "email": "usuario@empresa.com"
-    }
+  "success": true,
+  "user": { "id": 1, "name": "Juan Pérez", "email": "usuario@empresa.com" }
 }
 ```
 
@@ -102,12 +92,7 @@ Authorization: Bearer {tu_token}
 - Response JSON:
 
 ```json
-{
-    "success": true,
-    "token": "1|abcdef123456...",
-    "token_type": "Bearer",
-    "user": { "id": 1, "name": "Juan Pérez", "email": "usuario@empresa.com" }
-}
+{ "success": true, "token": "1|abcdef123456...", "token_type": "Bearer", "user": { "id": 1, "name": "Juan Pérez", "email": "usuario@empresa.com" } }
 ```
 
 #### 2) Obtener Usuario Actual
@@ -117,10 +102,7 @@ Authorization: Bearer {tu_token}
 - Response JSON:
 
 ```json
-{
-    "success": true,
-    "user": { "id": 1, "name": "Juan Pérez", "email": "usuario@empresa.com" }
-}
+{ "success": true, "user": { "id": 1, "name": "Juan Pérez", "email": "usuario@empresa.com" } }
 ```
 
 #### 3) Revocar Token Actual
@@ -150,19 +132,7 @@ Authorization: Bearer {tu_token}
 - Response JSON:
 
 ```json
-{
-    "success": true,
-    "tokens": [
-        {
-            "id": 10,
-            "name": "intranet",
-            "abilities": ["read", "write"],
-            "last_used_at": "2025-10-29 13:45:00",
-            "expires_at": "2025-11-28 12:00:00",
-            "created_at": "2025-10-28 12:00:00"
-        }
-    ]
-}
+{ "success": true, "tokens": [ { "id": 10, "name": "intranet", "abilities": ["read", "write"], "last_used_at": "2025-10-29 13:45:00", "expires_at": "2025-11-28 12:00:00", "created_at": "2025-10-28 12:00:00" } ] }
 ```
 
 #### 6) Revocar Token por ID
@@ -184,7 +154,6 @@ Authorization: Bearer {tu_token}
 ```json
 { "name": "intranet" }
 ```
-
 - Response JSON:
 
 ```json
@@ -230,3 +199,5 @@ Authorization: Bearer {tu_token}
 
 - Limpieza de tokens expirados programada: `sanctum:prune-expired` (scheduler cada hora).
 - Los tokens sin `expires_at` no se eliminan automáticamente; revócalos con los endpoints de administración.
+
+
