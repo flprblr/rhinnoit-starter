@@ -119,13 +119,13 @@ class GoogleController extends Controller
             }
 
             $extension = 'jpg'; // Google avatars are typically JPG
-            $filename = "avatar_{$userId}_" . time() . ".{$extension}";
+            $filename = "avatar_{$userId}_".time().".{$extension}";
             $path = "avatars/{$filename}";
             $fullPath = storage_path("app/public/{$path}");
 
             // Ensure directory exists
             $directory = dirname($fullPath);
-            if (!is_dir($directory)) {
+            if (! is_dir($directory)) {
                 mkdir($directory, 0755, true);
             }
 
@@ -133,7 +133,7 @@ class GoogleController extends Controller
                 return "storage/{$path}";
             }
         } catch (\Exception $e) {
-            \Log::warning("Failed to download avatar for user {$userId}: " . $e->getMessage());
+            \Log::warning("Failed to download avatar for user {$userId}: ".$e->getMessage());
         }
 
         return null;

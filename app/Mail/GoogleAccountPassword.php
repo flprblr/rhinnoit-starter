@@ -17,8 +17,7 @@ class GoogleAccountPassword extends Mailable implements ShouldQueue
     public function __construct(
         public User $user,
         public string $plainPassword
-    ) {
-    }
+    ) {}
 
     public function envelope(): Envelope
     {
@@ -34,4 +33,3 @@ class GoogleAccountPassword extends Mailable implements ShouldQueue
         );
     }
 }
-
