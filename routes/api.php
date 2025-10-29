@@ -1,21 +1,16 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Aquí se cargan las rutas de API. Los archivos sanctum.php y passport.php
+| contienen las rutas específicas de cada sistema de autenticación.
+|
+*/
 
 require __DIR__.'/sanctum.php';
 require __DIR__.'/passport.php';
-
-Route::prefix('sanctum')->group(function () {
-    Route::post('/token', [\App\Http\Controllers\Api\Sanctum\AuthController::class, 'issueToken']);
-    Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-        return $request->user();
-    });
-});
-
-Route::prefix('passport')->group(function () {
-    Route::post('/token', [\App\Http\Controllers\Api\Passport\AuthController::class, 'issueToken']);
-    Route::middleware('auth:api')->get('/user', function (Request $request) {
-        return $request->user();
-    });
-});
