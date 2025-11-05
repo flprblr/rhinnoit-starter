@@ -34,8 +34,6 @@ class PermissionsSeeder extends Seeder
             'permissions.destroy',
             'permissions.import',
             'permissions.export',
-            'api.sanctum',
-            'api.passport',
         ];
 
         foreach ($permissions as $permission) {

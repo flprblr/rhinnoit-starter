@@ -12,9 +12,6 @@ class AuthController extends Controller
 {
     /**
      * Emitir un token de acceso Passport para empresas externas
-     *
-     * @param  ServerRequestInterface  $request
-     * @return JsonResponse
      */
     public function issueToken(ServerRequestInterface $request): JsonResponse
     {
@@ -40,9 +37,6 @@ class AuthController extends Controller
 
     /**
      * Obtener el usuario autenticado actual
-     *
-     * @param  Request  $request
-     * @return JsonResponse
      */
     public function user(Request $request): JsonResponse
     {
@@ -58,9 +52,6 @@ class AuthController extends Controller
 
     /**
      * Revocar el token actual del usuario
-     *
-     * @param  Request  $request
-     * @return JsonResponse
      */
     public function revokeToken(Request $request): JsonResponse
     {
@@ -79,9 +70,6 @@ class AuthController extends Controller
 
     /**
      * Revocar todos los tokens del usuario
-     *
-     * @param  Request  $request
-     * @return JsonResponse
      */
     public function revokeAllTokens(Request $request): JsonResponse
     {

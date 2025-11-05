@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Sanctum;
 
 use App\Http\Controllers\Controller;
 use App\Models\UserSanctum;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -13,9 +14,6 @@ class AuthController extends Controller
 {
     /**
      * Emitir un token de acceso Sanctum para autenticación interna
-     *
-     * @param  Request  $request
-     * @return JsonResponse
      */
     public function issueToken(Request $request): JsonResponse
     {
@@ -23,6 +21,9 @@ class AuthController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
             'device_name' => ['required', 'string', 'max:255'],
+            'abilities' => ['nullable', 'array'],
+            'abilities.*' => ['string'],
+            'expires_at' => ['nullable', 'date', 'after:now'],
         ]);
 
         $user = UserSanctum::where('email', $validated['email'])->first();
@@ -33,7 +34,16 @@ class AuthController extends Controller
             ]);
         }
 
-        $token = $user->createToken($validated['device_name']);
+        $abilities = $validated['abilities'] ?? ['*'];
+        $expiresAt = isset($validated['expires_at']) 
+            ? Carbon::parse($validated['expires_at']) 
+            : null;
+
+        $token = $user->createToken(
+            $validated['device_name'],
+            $abilities,
+            $expiresAt
+        );
 
         return response()->json([
             'success' => true,
@@ -44,14 +54,16 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
             ],
+            'token_info' => [
+                'name' => $token->accessToken->name,
+                'abilities' => $token->accessToken->abilities,
+                'expires_at' => $token->accessToken->expires_at?->toDateTimeString(),
+            ],
         ], 200);
     }
 
     /**
      * Obtener el usuario autenticado actual
-     *
-     * @param  Request  $request
-     * @return JsonResponse
      */
     public function user(Request $request): JsonResponse
     {
@@ -67,9 +79,6 @@ class AuthController extends Controller
 
     /**
      * Revocar el token actual del usuario
-     *
-     * @param  Request  $request
-     * @return JsonResponse
      */
     public function revokeToken(Request $request): JsonResponse
     {
@@ -83,9 +92,6 @@ class AuthController extends Controller
 
     /**
      * Revocar todos los tokens del usuario
-     *
-     * @param  Request  $request
-     * @return JsonResponse
      */
     public function revokeAllTokens(Request $request): JsonResponse
     {
@@ -195,6 +201,171 @@ class AuthController extends Controller
             'success' => true,
             'deleted' => $deleted,
             'message' => 'Tokens expirados revocados.',
+        ], 200);
+    }
+
+    /**
+     * Verificar si el token actual es válido
+     */
+    public function verify(Request $request): JsonResponse
+    {
+        $token = $request->user()->currentAccessToken();
+
+        if (! $token) {
+            return response()->json([
+                'success' => false,
+                'valid' => false,
+                'message' => 'No se encontró un token válido.',
+            ], 401);
+        }
+
+        $isValid = ! $token->expires_at || $token->expires_at > now();
+
+        return response()->json([
+            'success' => true,
+            'valid' => $isValid,
+            'token' => [
+                'id' => $token->id,
+                'name' => $token->name,
+                'abilities' => $token->abilities,
+                'expires_at' => $token->expires_at?->toDateTimeString(),
+                'last_used_at' => $token->last_used_at?->toDateTimeString(),
+                'created_at' => $token->created_at->toDateTimeString(),
+            ],
+        ], 200);
+    }
+
+    /**
+     * Obtener información de un token específico
+     */
+    public function showToken(Request $request, int $tokenId): JsonResponse
+    {
+        $token = $request->user()->tokens()->find($tokenId);
+
+        if (! $token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Token no encontrado o no pertenece al usuario.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'token' => [
+                'id' => $token->id,
+                'name' => $token->name,
+                'abilities' => $token->abilities,
+                'last_used_at' => $token->last_used_at?->toDateTimeString(),
+                'expires_at' => $token->expires_at?->toDateTimeString(),
+                'created_at' => $token->created_at->toDateTimeString(),
+                'updated_at' => $token->updated_at->toDateTimeString(),
+            ],
+        ], 200);
+    }
+
+    /**
+     * Actualizar un token existente
+     */
+    public function updateToken(Request $request, int $tokenId): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['sometimes', 'string', 'max:255'],
+            'abilities' => ['sometimes', 'array'],
+            'abilities.*' => ['string'],
+            'expires_at' => ['sometimes', 'nullable', 'date', 'after:now'],
+        ]);
+
+        $token = $request->user()->tokens()->find($tokenId);
+
+        if (! $token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Token no encontrado o no pertenece al usuario.',
+            ], 404);
+        }
+
+        if (isset($validated['expires_at'])) {
+            $validated['expires_at'] = $validated['expires_at'] 
+                ? Carbon::parse($validated['expires_at']) 
+                : null;
+        }
+
+        $token->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Token actualizado exitosamente.',
+            'token' => [
+                'id' => $token->id,
+                'name' => $token->name,
+                'abilities' => $token->abilities,
+                'expires_at' => $token->expires_at?->toDateTimeString(),
+                'last_used_at' => $token->last_used_at?->toDateTimeString(),
+                'created_at' => $token->created_at->toDateTimeString(),
+                'updated_at' => $token->updated_at->toDateTimeString(),
+            ],
+        ], 200);
+    }
+
+    /**
+     * Obtener cookie CSRF para autenticación SPA
+     * 
+     * Nota: La cookie CSRF se establece automáticamente por el middleware 'web'
+     */
+    public function csrfCookie(): JsonResponse
+    {
+        // La cookie CSRF se establece automáticamente por el middleware web
+        // Solo retornamos una respuesta exitosa
+        return response()->json([
+            'success' => true,
+            'message' => 'Cookie CSRF establecida correctamente.',
+        ], 200);
+    }
+
+    /**
+     * Autenticación basada en sesión para SPAs
+     */
+    public function login(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $user = UserSanctum::where('email', $validated['email'])->first();
+
+        if (! $user || ! Hash::check($validated['password'], $user->password)) {
+            throw ValidationException::withMessages([
+                'email' => ['Las credenciales proporcionadas son incorrectas.'],
+            ]);
+        }
+
+        // Autenticar usando sesión web
+        auth('web')->login($user);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Autenticación exitosa.',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
+        ], 200);
+    }
+
+    /**
+     * Cerrar sesión basada en sesión para SPAs
+     */
+    public function logout(Request $request): JsonResponse
+    {
+        auth('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Sesión cerrada exitosamente.',
         ], 200);
     }
 }
