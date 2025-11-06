@@ -28,6 +28,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'abilities' => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
             'ability' => \Laravel\Sanctum\Http\Middleware\CheckForAnyAbility::class,
         ]);
+
+        // Register Passport scope middleware
+        $middleware->alias([
+            'scopes' => \Laravel\Passport\Http\Middleware\CheckScopes::class,
+            'scope' => \Laravel\Passport\Http\Middleware\CheckForAnyScope::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
