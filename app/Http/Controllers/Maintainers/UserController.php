@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Maintainers;
 
 use App\Exports\UsersExport;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Maintainers\Concerns\Searchable;
 use App\Http\Requests\Maintainers\Users\StoreUserRequest;
 use App\Http\Requests\Maintainers\Users\UpdateUserRequest;
 use App\Imports\UsersImport;
@@ -20,6 +21,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class UserController extends Controller
 {
+    use Searchable;
+
     public function __construct()
     {
         $this->authorizeResource(User::class, 'user');
@@ -30,46 +33,20 @@ class UserController extends Controller
      */
     public function index(Request $request): Response
     {
-        $allowedSortColumns = ['id', 'name', 'email', 'created_at', 'updated_at'];
-        $allowedSortDirections = ['asc', 'desc'];
-        $defaultPerPage = 10;
-        $maxPerPage = 100;
+        $users = User::select(['id', 'name', 'email', 'created_at', 'updated_at'])
+            ->with('roles:id,name')
+            ->when($this->getCleanSearchTerm($request), function ($query) use ($request) {
+                $this->applySearch($query, $request, ['name', 'email']);
+            })
+            ->paginate(10)
+            ->withQueryString();
 
-        $sortBy = $request->input('sort_by', 'id');
-        if (! in_array($sortBy, $allowedSortColumns, true)) {
-            $sortBy = 'id';
-        }
-
-        $sortDirection = strtolower($request->input('sort_direction', 'asc'));
-        if (! in_array($sortDirection, $allowedSortDirections, true)) {
-            $sortDirection = 'asc';
-        }
-
-        $perPage = (int) $request->input('per_page', $defaultPerPage);
-        $perPage = $perPage > 0 ? min($perPage, $maxPerPage) : $defaultPerPage;
-
-        $query = User::select(['id', 'name', 'email', 'created_at', 'updated_at'])
-            ->with('roles:id,name');
-
-        if ($search = trim((string) $request->input('search'))) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-                if (is_numeric($search)) {
-                    $q->orWhere('id', (int) $search);
-                }
-            });
-        }
-
-        $query->orderBy($sortBy, $sortDirection);
-
-        $users = $query->paginate($perPage)->withQueryString();
         $roles = Role::select(['id', 'name'])->orderBy('id', 'asc')->get();
 
         return Inertia::render('maintainers/users/Index', [
             'users' => $users,
             'roles' => $roles,
-            'filters' => $request->only(['search', 'sort_by', 'sort_direction', 'per_page']),
+            'filters' => $request->only(['search']),
         ]);
     }
 

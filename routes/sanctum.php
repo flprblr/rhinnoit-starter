@@ -8,18 +8,18 @@ use Illuminate\Support\Facades\Route;
 | Sanctum API Routes
 |--------------------------------------------------------------------------
 |
-| Rutas de API para autenticación interna usando Laravel Sanctum.
-| Estas rutas están destinadas para uso interno dentro de la empresa.
+| API routes for internal authentication using Laravel Sanctum.
+| These routes are intended for internal use within the company.
 |
 */
 
 Route::prefix('sanctum')->name('sanctum.')->group(function () {
-    // Rutas públicas para autenticación
+    // Public routes for authentication
     Route::post('/token', [AuthController::class, 'issueToken'])
         ->middleware('throttle:5,1')
         ->name('token');
 
-    // Rutas públicas para autenticación SPA (basada en sesión)
+    // Public routes for SPA authentication (session-based)
     Route::middleware('web')->group(function () {
         Route::get('/csrf-cookie', [AuthController::class, 'csrfCookie'])
             ->middleware('throttle:10,1')
@@ -32,19 +32,19 @@ Route::prefix('sanctum')->name('sanctum.')->group(function () {
             ->name('logout');
     });
 
-    // Rutas protegidas con autenticación de token
+    // Protected routes with token authentication
     Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
         Route::get('/user', [AuthController::class, 'user'])->name('user');
         Route::get('/verify', [AuthController::class, 'verify'])->name('verify');
         Route::post('/revoke', [AuthController::class, 'revokeToken'])->name('revoke');
         Route::post('/revoke-all', [AuthController::class, 'revokeAllTokens'])->name('revoke-all');
-        
-        // Rutas específicas de tokens (deben ir antes de las rutas con parámetros)
+
+        // Specific token routes (must go before routes with parameters)
         Route::post('/tokens/revoke-by-name', [AuthController::class, 'revokeByName'])->name('tokens.revoke-by-name');
         Route::post('/tokens/revoke-others', [AuthController::class, 'revokeOthers'])->name('tokens.revoke-others');
         Route::post('/tokens/revoke-expired', [AuthController::class, 'revokeExpired'])->name('tokens.revoke-expired');
-        
-        // Rutas de tokens con parámetros (deben ir después de las rutas específicas)
+
+        // Token routes with parameters (must go after specific routes)
         Route::get('/tokens', [AuthController::class, 'listTokens'])->name('tokens');
         Route::get('/tokens/{id}', [AuthController::class, 'showToken'])->name('tokens.show');
         Route::patch('/tokens/{id}', [AuthController::class, 'updateToken'])->name('tokens.update');

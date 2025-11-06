@@ -12,19 +12,19 @@ use Psr\Http\Message\ServerRequestInterface;
 class AuthController extends Controller
 {
     /**
-     * Emitir un token de acceso Passport para empresas externas
+     * Issue a Passport access token for external companies
      */
     public function issueToken(ServerRequestInterface $request): JsonResponse
     {
         $accessTokenController = app(\Laravel\Passport\Http\Controllers\AccessTokenController::class);
         $response = $accessTokenController->issueToken($request);
 
-        // Si hay un error, devolverlo directamente
+        // If there's an error, return it directly
         if ($response->getStatusCode() !== 200) {
             return $response;
         }
 
-        // Decodificar la respuesta para agregar formato consistente
+        // Decode the response to add consistent format
         $tokenData = json_decode($response->getContent(), true);
 
         return response()->json([
@@ -38,7 +38,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Obtener el usuario autenticado actual
+     * Get the current authenticated user
      */
     public function user(Request $request): JsonResponse
     {
@@ -53,7 +53,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Verificar si el token actual es válido
+     * Verify if the current token is valid
      */
     public function verify(Request $request): JsonResponse
     {
@@ -63,7 +63,7 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'valid' => false,
-                'message' => 'No se encontró un token válido.',
+                'message' => 'No valid token found.',
             ], 401);
         }
 
@@ -83,7 +83,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Listar tokens del usuario autenticado
+     * List tokens of the authenticated user
      */
     public function listTokens(Request $request): JsonResponse
     {
@@ -109,7 +109,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Obtener información de un token específico
+     * Get information about a specific token
      */
     public function showToken(Request $request, int $tokenId): JsonResponse
     {
@@ -118,7 +118,7 @@ class AuthController extends Controller
         if (! $token) {
             return response()->json([
                 'success' => false,
-                'message' => 'Token no encontrado o no pertenece al usuario.',
+                'message' => 'Token not found or does not belong to the user.',
             ], 404);
         }
 
@@ -137,7 +137,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Revocar el token actual del usuario
+     * Revoke the current user's token
      */
     public function revokeToken(Request $request): JsonResponse
     {
@@ -152,12 +152,12 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Token revocado exitosamente.',
+            'message' => 'Token revoked successfully.',
         ], 200);
     }
 
     /**
-     * Revocar un token por ID (del usuario autenticado)
+     * Revoke a token by ID (of the authenticated user)
      */
     public function revokeById(Request $request, int $tokenId): JsonResponse
     {
@@ -168,7 +168,7 @@ class AuthController extends Controller
         if (! $token) {
             return response()->json([
                 'success' => false,
-                'message' => 'Token no encontrado o no pertenece al usuario.',
+                'message' => 'Token not found or does not belong to the user.',
             ], 404);
         }
 
@@ -177,12 +177,12 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Token revocado exitosamente.',
+            'message' => 'Token revoked successfully.',
         ], 200);
     }
 
     /**
-     * Revocar todos los tokens del usuario
+     * Revoke all user tokens
      */
     public function revokeAllTokens(Request $request): JsonResponse
     {
@@ -197,12 +197,12 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Todos los tokens han sido revocados exitosamente.',
+            'message' => 'All tokens have been revoked successfully.',
         ], 200);
     }
 
     /**
-     * Revocar todos los tokens excepto el actual
+     * Revoke all tokens except the current one
      */
     public function revokeOthers(Request $request): JsonResponse
     {
@@ -223,12 +223,12 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'deleted' => $deleted,
-            'message' => 'Se han revocado los demás tokens.',
+            'message' => 'Other tokens have been revoked.',
         ], 200);
     }
 
     /**
-     * Revocar tokens expirados del usuario autenticado
+     * Revoke expired tokens of the authenticated user
      */
     public function revokeExpired(Request $request): JsonResponse
     {
@@ -250,12 +250,12 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'deleted' => $deleted,
-            'message' => 'Tokens expirados revocados.',
+            'message' => 'Expired tokens revoked.',
         ], 200);
     }
 
     /**
-     * Revocar refresh token
+     * Revoke refresh token
      */
     public function revokeRefreshToken(Request $request): JsonResponse
     {
@@ -273,13 +273,13 @@ class AuthController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Refresh token revocado exitosamente.',
+                'message' => 'Refresh token revoked successfully.',
             ], 200);
         }
 
         return response()->json([
             'success' => false,
-            'message' => 'Refresh token no encontrado.',
+            'message' => 'Refresh token not found.',
         ], 404);
     }
 }

@@ -16,7 +16,7 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, Pagi
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { RowAction, TableColumn } from '@/types';
 
-defineOptions({ name: 'SimpleTable' });
+defineOptions({ name: 'DataTable' });
 
 const props = withDefaults(
     defineProps<{

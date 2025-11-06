@@ -8,18 +8,18 @@ use Illuminate\Support\Facades\Route;
 | Passport API Routes
 |--------------------------------------------------------------------------
 |
-| Rutas de API para autenticación externa usando Laravel Passport (OAuth2).
-| Estas rutas están destinadas para empresas externas que se conectan.
+| API routes for external authentication using Laravel Passport (OAuth2).
+| These routes are intended for external companies that connect.
 |
 */
 
 Route::prefix('passport')->name('passport.')->group(function () {
-    // Rutas públicas para autenticación
+    // Public routes for authentication
     Route::post('/token', [AuthController::class, 'issueToken'])
         ->middleware('throttle:5,1')
         ->name('token');
 
-    // Rutas protegidas con autenticación de token
+    // Protected routes with token authentication
     Route::middleware(['auth:api', 'throttle:60,1'])->group(function () {
         Route::get('/user', [AuthController::class, 'user'])->name('user');
         Route::get('/verify', [AuthController::class, 'verify'])->name('verify');

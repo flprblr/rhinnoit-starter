@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     /**
-     * Emitir un token de acceso Sanctum para autenticación interna
+     * Issue a Sanctum access token for internal authentication
      */
     public function issueToken(Request $request): JsonResponse
     {
@@ -30,13 +30,13 @@ class AuthController extends Controller
 
         if (! $user || ! Hash::check($validated['password'], $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['Las credenciales proporcionadas son incorrectas.'],
+                'email' => ['The provided credentials are incorrect.'],
             ]);
         }
 
         $abilities = $validated['abilities'] ?? ['*'];
-        $expiresAt = isset($validated['expires_at']) 
-            ? Carbon::parse($validated['expires_at']) 
+        $expiresAt = isset($validated['expires_at'])
+            ? Carbon::parse($validated['expires_at'])
             : null;
 
         $token = $user->createToken(
@@ -63,7 +63,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Obtener el usuario autenticado actual
+     * Get the current authenticated user
      */
     public function user(Request $request): JsonResponse
     {
@@ -78,7 +78,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Revocar el token actual del usuario
+     * Revoke the current user's token
      */
     public function revokeToken(Request $request): JsonResponse
     {
@@ -86,12 +86,12 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Token revocado exitosamente.',
+            'message' => 'Token revoked successfully.',
         ], 200);
     }
 
     /**
-     * Revocar todos los tokens del usuario
+     * Revoke all user tokens
      */
     public function revokeAllTokens(Request $request): JsonResponse
     {
@@ -99,12 +99,12 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Todos los tokens han sido revocados exitosamente.',
+            'message' => 'All tokens have been revoked successfully.',
         ], 200);
     }
 
     /**
-     * Listar tokens del usuario autenticado
+     * List tokens of the authenticated user
      */
     public function listTokens(Request $request): JsonResponse
     {
@@ -131,7 +131,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Revocar un token por ID (del usuario autenticado)
+     * Revoke a token by ID (of the authenticated user)
      */
     public function revokeById(Request $request, int $tokenId): JsonResponse
     {
@@ -140,18 +140,18 @@ class AuthController extends Controller
         if (! $deleted) {
             return response()->json([
                 'success' => false,
-                'message' => 'Token no encontrado o no pertenece al usuario.',
+                'message' => 'Token not found or does not belong to the user.',
             ], 404);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Token revocado exitosamente.',
+            'message' => 'Token revoked successfully.',
         ], 200);
     }
 
     /**
-     * Revocar tokens por nombre (del usuario autenticado)
+     * Revoke tokens by name (of the authenticated user)
      */
     public function revokeByName(Request $request): JsonResponse
     {
@@ -164,12 +164,12 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'deleted' => $deleted,
-            'message' => $deleted ? 'Tokens revocados exitosamente.' : 'No se encontraron tokens con ese nombre.',
+            'message' => $deleted ? 'Tokens revoked successfully.' : 'No tokens found with that name.',
         ], 200);
     }
 
     /**
-     * Revocar todos los tokens excepto el actual
+     * Revoke all tokens except the current one
      */
     public function revokeOthers(Request $request): JsonResponse
     {
@@ -183,12 +183,12 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'deleted' => $deleted,
-            'message' => 'Se han revocado los demás tokens.',
+            'message' => 'Other tokens have been revoked.',
         ], 200);
     }
 
     /**
-     * Revocar tokens expirados del usuario autenticado
+     * Revoke expired tokens of the authenticated user
      */
     public function revokeExpired(Request $request): JsonResponse
     {
@@ -200,12 +200,12 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'deleted' => $deleted,
-            'message' => 'Tokens expirados revocados.',
+            'message' => 'Expired tokens revoked.',
         ], 200);
     }
 
     /**
-     * Verificar si el token actual es válido
+     * Verify if the current token is valid
      */
     public function verify(Request $request): JsonResponse
     {
@@ -215,7 +215,7 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'valid' => false,
-                'message' => 'No se encontró un token válido.',
+                'message' => 'No valid token found.',
             ], 401);
         }
 
@@ -236,7 +236,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Obtener información de un token específico
+     * Get information about a specific token
      */
     public function showToken(Request $request, int $tokenId): JsonResponse
     {
@@ -245,7 +245,7 @@ class AuthController extends Controller
         if (! $token) {
             return response()->json([
                 'success' => false,
-                'message' => 'Token no encontrado o no pertenece al usuario.',
+                'message' => 'Token not found or does not belong to the user.',
             ], 404);
         }
 
@@ -264,7 +264,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Actualizar un token existente
+     * Update an existing token
      */
     public function updateToken(Request $request, int $tokenId): JsonResponse
     {
@@ -280,13 +280,13 @@ class AuthController extends Controller
         if (! $token) {
             return response()->json([
                 'success' => false,
-                'message' => 'Token no encontrado o no pertenece al usuario.',
+                'message' => 'Token not found or does not belong to the user.',
             ], 404);
         }
 
         if (isset($validated['expires_at'])) {
-            $validated['expires_at'] = $validated['expires_at'] 
-                ? Carbon::parse($validated['expires_at']) 
+            $validated['expires_at'] = $validated['expires_at']
+                ? Carbon::parse($validated['expires_at'])
                 : null;
         }
 
@@ -294,7 +294,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Token actualizado exitosamente.',
+            'message' => 'Token updated successfully.',
             'token' => [
                 'id' => $token->id,
                 'name' => $token->name,
@@ -308,22 +308,22 @@ class AuthController extends Controller
     }
 
     /**
-     * Obtener cookie CSRF para autenticación SPA
-     * 
-     * Nota: La cookie CSRF se establece automáticamente por el middleware 'web'
+     * Get CSRF cookie for SPA authentication
+     *
+     * Note: The CSRF cookie is automatically set by the 'web' middleware
      */
     public function csrfCookie(): JsonResponse
     {
-        // La cookie CSRF se establece automáticamente por el middleware web
-        // Solo retornamos una respuesta exitosa
+        // The CSRF cookie is automatically set by the web middleware
+        // We just return a successful response
         return response()->json([
             'success' => true,
-            'message' => 'Cookie CSRF establecida correctamente.',
+            'message' => 'CSRF cookie set successfully.',
         ], 200);
     }
 
     /**
-     * Autenticación basada en sesión para SPAs
+     * Session-based authentication for SPAs
      */
     public function login(Request $request): JsonResponse
     {
@@ -336,16 +336,16 @@ class AuthController extends Controller
 
         if (! $user || ! Hash::check($validated['password'], $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['Las credenciales proporcionadas son incorrectas.'],
+                'email' => ['The provided credentials are incorrect.'],
             ]);
         }
 
-        // Autenticar usando sesión web
+        // Authenticate using web session
         auth('web')->login($user);
 
         return response()->json([
             'success' => true,
-            'message' => 'Autenticación exitosa.',
+            'message' => 'Authentication successful.',
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -355,7 +355,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Cerrar sesión basada en sesión para SPAs
+     * Logout session-based authentication for SPAs
      */
     public function logout(Request $request): JsonResponse
     {
@@ -365,7 +365,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Sesión cerrada exitosamente.',
+            'message' => 'Session closed successfully.',
         ], 200);
     }
 }

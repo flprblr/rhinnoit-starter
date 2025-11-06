@@ -7,9 +7,9 @@ import { useForm } from 'laravel-precognition-vue-inertia';
 
 import { Eye, SquarePen, Trash2 } from 'lucide-vue-next';
 
+import DataTable from '@/components/DataTable.vue';
 import HeaderTable from '@/components/HeaderTable.vue';
 import InputError from '@/components/InputError.vue';
-import SimpleTable from '@/components/SimpleTable.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -243,7 +243,7 @@ useFlashWatcher();
                 @export="downloadExport"
                 @import="goImport" />
 
-            <SimpleTable
+            <DataTable
                 :columns="columns"
                 :items="props.roles.data"
                 :items-per-page="props.roles.per_page || 10"

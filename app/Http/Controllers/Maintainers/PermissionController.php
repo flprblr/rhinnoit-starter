@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Maintainers;
 
 use App\Exports\PermissionsExport;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Maintainers\Concerns\Searchable;
 use App\Http\Requests\Maintainers\Permissions\StorePermissionRequest;
 use App\Http\Requests\Maintainers\Permissions\UpdatePermissionRequest;
 use App\Imports\PermissionsImport;
@@ -18,6 +19,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PermissionController extends Controller
 {
+    use Searchable;
+
     public function __construct()
     {
         $this->authorizeResource(Permission::class, 'permission');
@@ -28,42 +31,16 @@ class PermissionController extends Controller
      */
     public function index(Request $request): Response
     {
-        $allowedSortColumns = ['id', 'name', 'created_at', 'updated_at'];
-        $allowedSortDirections = ['asc', 'desc'];
-        $defaultPerPage = 10;
-        $maxPerPage = 100;
-
-        $sortBy = $request->input('sort_by', 'id');
-        if (! in_array($sortBy, $allowedSortColumns, true)) {
-            $sortBy = 'id';
-        }
-
-        $sortDirection = strtolower($request->input('sort_direction', 'asc'));
-        if (! in_array($sortDirection, $allowedSortDirections, true)) {
-            $sortDirection = 'asc';
-        }
-
-        $perPage = (int) $request->input('per_page', $defaultPerPage);
-        $perPage = $perPage > 0 ? min($perPage, $maxPerPage) : $defaultPerPage;
-
-        $query = Permission::select(['id', 'name', 'created_at', 'updated_at']);
-
-        if ($search = trim((string) $request->input('search'))) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%");
-                if (is_numeric($search)) {
-                    $q->orWhere('id', (int) $search);
-                }
-            });
-        }
-
-        $query->orderBy($sortBy, $sortDirection);
-
-        $permissions = $query->paginate($perPage)->withQueryString();
+        $permissions = Permission::select(['id', 'name', 'created_at', 'updated_at'])
+            ->when($this->getCleanSearchTerm($request), function ($query) use ($request) {
+                $this->applySearch($query, $request, ['name']);
+            })
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('maintainers/permissions/Index', [
             'permissions' => $permissions,
-            'filters' => $request->only(['search', 'sort_by', 'sort_direction', 'per_page']),
+            'filters' => $request->only(['search']),
         ]);
     }
 

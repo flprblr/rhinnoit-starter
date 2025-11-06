@@ -5,8 +5,8 @@
 | API Routes
 |--------------------------------------------------------------------------
 |
-| Aquí se cargan las rutas de API. Los archivos sanctum.php y passport.php
-| contienen las rutas específicas de cada sistema de autenticación.
+| Here the API routes are loaded. The sanctum.php and passport.php files
+| contain the specific routes for each authentication system.
 |
 */
 

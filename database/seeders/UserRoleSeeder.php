@@ -20,6 +20,7 @@ class UserRoleSeeder extends Seeder
             'password' => Hash::make('F3l1p3#Rub1l4r!'),
             'dni' => '17353223-7',
             'phone' => '+56966107777',
+            'google_id' => '104875389731784774579',
         ]);
 
         $user->assignRole('Administrator');
