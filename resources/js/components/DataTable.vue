@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 
+import { Search } from 'lucide-vue-next';
+
 import type { AcceptableValue } from 'reka-ui';
 
 import {
@@ -14,7 +16,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -141,7 +143,7 @@ const totalColumns = computed(() => {
     return props.columns.length + (hasActions ? 1 : 0);
 });
 
-const perPageLabel = computed(() => props.perPageLabel ?? 'Rows per page');
+const perPageLabel = computed(() => props.perPageLabel ?? 'rows per page');
 
 const perPageOptions = computed<number[]>(() => {
     const options = props.perPageOptions && props.perPageOptions.length ? props.perPageOptions : [10, 25, 50, 100];
@@ -198,7 +200,12 @@ defineSlots<{
     <div class="space-y-3">
         <div class="flex flex-col items-center gap-4 md:flex-row md:items-center md:justify-between">
             <div class="text-center md:text-left">
-                <Input type="text" :placeholder="searchPlaceholder" :model-value="searchTerm" @update:model-value="handleSearchInput" />
+                <InputGroup>
+                    <InputGroupInput :placeholder="searchPlaceholder" :model-value="searchTerm" @update:model-value="handleSearchInput" />
+                    <InputGroupAddon>
+                        <Search />
+                    </InputGroupAddon>
+                </InputGroup>
             </div>
             <div class="flex items-center justify-center gap-2 md:justify-end">
                 <Select :model-value="String(currentPerPage)" @update:modelValue="handlePerPageChange">
