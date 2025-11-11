@@ -26,15 +26,12 @@ npm run format
 
 ```bash
 composer clear-cache &&
-composer install &&
+composer install --no-interaction --no-dev &&
 composer pint &&
-npm cache verify &&
 npm install &&
 npm run format &&
 npm run build &&
-rm -rf node_modules &&
-rm -rf public/storage &&
-rm -rf storage/logs/laravel.log
+rm -rf node_modules public/storage storage/logs/laravel.log &&
 cd .. &&
 zip -q -r laravel.zip laravel -x ".DS_Store" -x "__MACOSX"
 ```
@@ -45,21 +42,17 @@ zip -q -r laravel.zip laravel -x ".DS_Store" -x "__MACOSX"
 unzip -qo laravel.zip &&
 rm -f laravel.zip &&
 rm -rf public_html &&
-ln -s /home/smapp/laravel/public /home/smapp/public_html &&
+ln -s /home/USER_DIR/laravel/public /home/USER_DIR/public_html &&
 cd laravel &&
-find /home/smapp/laravel/ -name ".DS_Store" -type f -delete &&
+find /home/USER_DIR/laravel/ -name ".DS_Store" -type f -delete &&
 rm -rf public/storage &&
 composer clear-cache &&
-composer install &&
+composer install --no-interaction --optimize-autoloader --no-dev &&
+php artisan optimize:clear &&
 php artisan storage:link &&
-php artisan event:clear &&
-php artisan route:clear &&
-php artisan view:clear &&
-php artisan config:clear &&
 php artisan event:cache &&
 php artisan route:cache &&
 php artisan view:cache &&
-composer install --optimize-autoloader --no-dev &&
 php artisan config:cache &&
 php artisan about
 ```
