@@ -138,12 +138,16 @@ const totalColumns = computed(() => {
     return props.columns.length + (hasActions ? 1 : 0);
 });
 
+const perPageLabel = computed(() => props.perPageLabel ?? 'rows per page');
+
 const perPageOptions = computed<number[]>(() => {
-    const options = props.perPageOptions && props.perPageOptions.length ? props.perPageOptions : [5, 10, 25, 50, 100];
+    const options = props.perPageOptions && props.perPageOptions.length ? props.perPageOptions : [10, 25, 50, 100];
     return Array.from(new Set(options.map((option) => Number(option)).filter((option) => option > 0))).sort((a, b) => a - b);
 });
 
 const currentPerPage = computed(() => paginationMeta.value.per_page ?? perPageOptions.value[0] ?? 10);
+
+const selectTriggerClass = computed(() => (String(currentPerPage.value).length > 2 ? 'w-20' : 'w-16'));
 
 const handlePerPageChange = (value: AcceptableValue) => {
     if (value === null || typeof value === 'boolean') {
@@ -174,7 +178,7 @@ defineSlots<{
             </div>
             <div class="flex items-center justify-center gap-2 md:justify-end">
                 <Select :model-value="String(currentPerPage)" @update:modelValue="handlePerPageChange">
-                    <SelectTrigger class="w-16">
+                    <SelectTrigger :class="selectTriggerClass">
                         <SelectValue :placeholder="perPageLabel" />
                     </SelectTrigger>
                     <SelectContent>
@@ -185,7 +189,7 @@ defineSlots<{
                         </SelectGroup>
                     </SelectContent>
                 </Select>
-                <span class="text-sm text-muted-foreground">rows per page</span>
+                <span class="text-sm text-muted-foreground">{{ perPageLabel }}</span>
             </div>
         </div>
 
