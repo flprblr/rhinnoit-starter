@@ -5,7 +5,7 @@ import { Head, router } from '@inertiajs/vue3';
 
 import { useForm } from 'laravel-precognition-vue-inertia';
 
-import { Eye, SquarePen, Trash2 } from 'lucide-vue-next';
+import { Download, Eye, Plus, SquarePen, Trash2, Upload } from 'lucide-vue-next';
 
 import DataTable from '@/components/DataTable.vue';
 import HeaderTable from '@/components/HeaderTable.vue';
@@ -56,7 +56,26 @@ const columns: TableColumn[] = [
     { label: 'Updated At', field: 'updated_at' },
 ];
 
-const headerActions = ['create', 'export', 'import'] as const;
+const headerActions: HeaderActionDefinition[] = [
+    {
+        key: 'create',
+        label: 'Create',
+        icon: Plus,
+        permission: 'create',
+    },
+    {
+        key: 'export',
+        label: 'Export',
+        icon: Download,
+        permission: 'export',
+    },
+    {
+        key: 'import',
+        label: 'Import',
+        icon: Upload,
+        permission: 'import',
+    },
+];
 
 const rowActions: RowAction[] = [
     {
@@ -83,7 +102,6 @@ const rowActions: RowAction[] = [
     },
 ];
 
-// Dialog states
 const tableLoading = ref(false);
 
 const searchTerm = ref(props.filters?.search ?? '');
@@ -142,7 +160,6 @@ const onRowAction = (payload: { key: string; id: number | string; item: Record<s
     });
 };
 
-// Forms
 const createForm = useForm('post', storePermission().url, {
     name: '',
 });
@@ -234,7 +251,6 @@ const onSearchChange = (value: string) => {
     );
 };
 
-// Form submissions
 const submitCreate = () => {
     createForm.post(storePermission().url, {
         preserveScroll: true,

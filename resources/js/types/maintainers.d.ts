@@ -1,6 +1,14 @@
 export {};
 
 declare global {
+    type HeaderActionDefinition = {
+        key: string;
+        label: string;
+        icon?: any;
+        permission?: string;
+        variant?: 'default' | 'outline' | 'secondary' | 'destructive' | 'ghost' | 'link';
+    };
+
     type PaginationLink = {
         url: string | null;
         label: string;

@@ -9,14 +9,6 @@ import { Separator } from '@/components/ui/separator';
 
 defineOptions({ name: 'HeaderTable' });
 
-type HeaderActionDefinition = {
-    key: string;
-    label: string;
-    icon?: any;
-    permission?: string;
-    variant?: 'default' | 'outline' | 'secondary' | 'destructive' | 'ghost' | 'link';
-};
-
 const props = withDefaults(
     defineProps<{
         title: string;

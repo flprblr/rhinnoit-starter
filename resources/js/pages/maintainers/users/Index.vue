@@ -5,7 +5,7 @@ import { Head, router } from '@inertiajs/vue3';
 
 import { useForm } from 'laravel-precognition-vue-inertia';
 
-import { Eye, SquarePen, Trash2 } from 'lucide-vue-next';
+import { Download, Eye, Plus, SquarePen, Trash2, Upload } from 'lucide-vue-next';
 
 import DataTable from '@/components/DataTable.vue';
 import HeaderTable from '@/components/HeaderTable.vue';
@@ -66,7 +66,26 @@ const columns: TableColumn[] = [
     { label: 'Updated At', field: 'updated_at' },
 ];
 
-const headerActions = ['create', 'export', 'import'] as const;
+const headerActions: HeaderActionDefinition[] = [
+    {
+        key: 'create',
+        label: 'Create',
+        icon: Plus,
+        permission: 'create',
+    },
+    {
+        key: 'export',
+        label: 'Export',
+        icon: Download,
+        permission: 'export',
+    },
+    {
+        key: 'import',
+        label: 'Import',
+        icon: Upload,
+        permission: 'import',
+    },
+];
 
 const rowActions: RowAction[] = [
     {
@@ -93,7 +112,6 @@ const rowActions: RowAction[] = [
     },
 ];
 
-// Dialog states
 const tableLoading = ref(false);
 
 const searchTerm = ref(props.filters?.search ?? '');
@@ -147,6 +165,10 @@ const {
 
 const selectedUser = computed(() => selectedItem.value);
 
+const hasRole = (roleId: number | string) => {
+    return selectedUser.value?.roles?.some((r: { id: number | string }) => Number(r.id) === Number(roleId)) ?? false;
+};
+
 const onRowAction = (payload: { key: string; id: number | string; item: Record<string, unknown> }) => {
     handleRowAction({
         key: payload.key,
@@ -155,7 +177,6 @@ const onRowAction = (payload: { key: string; id: number | string; item: Record<s
     });
 };
 
-// Forms
 const createForm = useForm('post', storeUser().url, {
     name: '',
     email: '',
@@ -253,7 +274,6 @@ const onSearchChange = (value: string) => {
     );
 };
 
-// Form submissions
 const submitCreate = () => {
     createForm.post(storeUser().url, {
         preserveScroll: true,
@@ -508,10 +528,7 @@ useFlashWatcher();
                         <Label>Roles</Label>
                         <div class="grid grid-cols-1 gap-3 rounded-lg border p-4 md:grid-cols-2 lg:grid-cols-3">
                             <div v-for="role in props.roles" :key="role.id" class="flex items-center space-x-2">
-                                <Checkbox
-                                    :id="`show-role-${role.id}`"
-                                    :model-value="selectedUser.roles?.some((r: { id: number | string }) => Number(r.id) === Number(role.id))"
-                                    disabled />
+                                <Checkbox :id="`show-role-${role.id}`" :model-value="hasRole(role.id)" disabled />
                                 <Label :for="`show-role-${role.id}`" class="text-sm font-normal">
                                     {{ role.name }}
                                 </Label>
