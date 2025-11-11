@@ -12,9 +12,7 @@ class PaginatorResource implements Arrayable
         return new self($paginator);
     }
 
-    public function __construct(private LengthAwarePaginator $paginator)
-    {
-    }
+    public function __construct(private LengthAwarePaginator $paginator) {}
 
     public function toArray(): array
     {
@@ -67,4 +65,3 @@ class PaginatorResource implements Arrayable
         return isset($query['page']) ? (int) $query['page'] : null;
     }
 }
-

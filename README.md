@@ -1,33 +1,28 @@
 # Local Installation
 
 ```bash
-composer clear-cache &&
-composer install &&
-composer pint &&
-npm cache verify &&
+composer install --no-interaction &&
 npm install &&
-php artisan wayfinder:generate &&
-npm run format &&
+php artisan optimize:clear &&
 rm -rf public/storage &&
 php artisan storage:link &&
-php artisan config:clear &&
-php artisan event:clear &&
-php artisan route:clear &&
-php artisan view:clear &&
+php artisan wayfinder:generate &&
+composer pint &&
+npm run format &&
 php artisan about
 ```
 
 # Daily Update
 
 ```bash
-composer update &&
-composer pint &&
+composer update --no-interaction &&
 npm update &&
 php artisan wayfinder:generate &&
+composer pint &&
 npm run format
 ```
 
-# Prepare to Production   
+# Prepare to Production
 
 ```bash
 composer clear-cache &&
