@@ -7,9 +7,9 @@
         <meta name="format-detection" content="telephone=no">
 
         {{-- SEO Meta Tags --}}
-        <meta name="description" content="{{ config('app.description', config('app.name', 'Laravel') . ' - ' . __('A modern web application')) }}">
-        <meta name="keywords" content="{{ config('app.keywords', '') }}">
-        <meta name="author" content="{{ config('app.name', 'Laravel') }}">
+        <meta name="description" content="{{ config('app.description') }}">
+        <meta name="keywords" content="{{ config('app.keywords') }}">
+        <meta name="author" content="{{ config('app.name') }}">
         <meta name="robots" content="noindex, nofollow">
         <meta name="googlebot" content="noindex, nofollow">
         <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -20,24 +20,24 @@
         {{-- Use WebP format (og-image.webp) with PNG fallback (og-image.png) --}}
         {{-- <meta property="og:type" content="website">
         <meta property="og:url" content="{{ url()->current() }}">
-        <meta property="og:title" content="{{ config('app.name', 'Laravel') }}">
-        <meta property="og:description" content="{{ config('app.description', config('app.name', 'Laravel') . ' - ' . __('A modern web application')) }}">
+        <meta property="og:title" content="{{ config('app.name') }}">
+        <meta property="og:description" content="{{ config('app.description') }}">
         <meta property="og:image" content="{{ asset('img/seo/og-image.webp') }}">
         <meta property="og:image:secure_url" content="{{ asset('img/seo/og-image.webp') }}">
         <meta property="og:image:width" content="1200">
         <meta property="og:image:height" content="630">
-        <meta property="og:image:alt" content="{{ config('app.name', 'Laravel') }}">
+        <meta property="og:image:alt" content="{{ config('app.name') }}">
         <meta property="og:locale" content="{{ str_replace('_', '-', app()->getLocale()) }}">
-        <meta property="og:site_name" content="{{ config('app.name', 'Laravel') }}"> --}}
+        <meta property="og:site_name" content="{{ config('app.name') }}"> --}}
 
         {{-- Twitter Card - Only for public pages (uncomment when needed) --}}
         {{-- Use WebP format (twitter-image.webp) with PNG fallback (twitter-image.png) --}}
         {{-- <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:url" content="{{ url()->current() }}">
-        <meta name="twitter:title" content="{{ config('app.name', 'Laravel') }}">
-        <meta name="twitter:description" content="{{ config('app.description', config('app.name', 'Laravel') . ' - ' . __('A modern web application')) }}">
+        <meta name="twitter:title" content="{{ config('app.name') }}">
+        <meta name="twitter:description" content="{{ config('app.description') }}">
         <meta name="twitter:image" content="{{ asset('img/seo/twitter-image.webp') }}">
-        <meta name="twitter:image:alt" content="{{ config('app.name', 'Laravel') }}"> --}}
+        <meta name="twitter:image:alt" content="{{ config('app.name') }}"> --}}
 
         {{-- Canonical URL --}}
         <link rel="canonical" href="{{ url()->current() }}">
@@ -47,8 +47,8 @@
         {
             "@context": "https://schema.org",
             "@type": "WebSite",
-            "name": "{{ config('app.name', 'Laravel') }}",
-            "description": "{{ config('app.description', config('app.name', 'Laravel') . ' - A modern web application') }}",
+            "name": "{{ config('app.name') }}",
+            "description": "{{ config('app.description') }}",
             "url": "{{ config('app.url') }}"
         }
         </script> --}}
@@ -87,7 +87,7 @@
             }
         </style>
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name') }}</title>
         
         @vite(['resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         @inertiaHead

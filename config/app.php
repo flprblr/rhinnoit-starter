@@ -17,6 +17,30 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Application Description
+    |--------------------------------------------------------------------------
+    |
+    | This value is the description of your application, which will be used
+    | for SEO meta tags and social media sharing.
+    |
+    */
+
+    'description' => env('APP_DESCRIPTION', null),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application Keywords
+    |--------------------------------------------------------------------------
+    |
+    | This value contains keywords for your application, which will be used
+    | for SEO meta tags. Separate multiple keywords with commas.
+    |
+    */
+
+    'keywords' => env('APP_KEYWORDS', ''),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |
