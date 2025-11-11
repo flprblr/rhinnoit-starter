@@ -109,12 +109,21 @@ const paginationMeta = computed(() => {
 });
 
 const paginationLabel = computed(() => {
-    if (!paginationMeta.value.total) {
-        return 'Showing 0 entries';
+    const total = paginationMeta.value.total ?? 0;
+    if (!total) {
+        return 'Showing 0 rows';
     }
+
+    const noun = total === 1 ? 'row' : 'rows';
     const from = paginationMeta.value.from ?? 0;
     const to = paginationMeta.value.to ?? 0;
-    return `Showing ${from} to ${to} of ${paginationMeta.value.total} entries`;
+    const lastPage = paginationMeta.value.last_page ?? 1;
+
+    if (lastPage <= 1) {
+        return `Showing ${total} ${noun}`;
+    }
+
+    return `Showing ${from} to ${to} of ${total} ${noun}`;
 });
 
 const totalColumns = computed(() => {
