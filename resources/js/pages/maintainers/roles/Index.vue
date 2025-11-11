@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import { Head, router } from '@inertiajs/vue3';
 
@@ -15,6 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useCrudTable } from '@/composables/useCrudTable';
 import { useFlashWatcher } from '@/composables/useFlashWatcher';
 import AppLayout from '@/layouts/AppLayout.vue';
 import {
@@ -32,8 +33,16 @@ interface Permission {
     name: string;
 }
 
+type RoleRow = {
+    id: number | string;
+    name: string;
+    created_at?: string | null;
+    updated_at?: string | null;
+    permissions?: Array<{ id: number | string; name: string }>;
+};
+
 const props = defineProps<{
-    roles: TablePaginator;
+    roles: PaginatedCollection<RoleRow>;
     permissions: Permission[];
 }>();
 
@@ -80,24 +89,56 @@ const rowActions: RowAction[] = [
 ];
 
 // Dialog states
-const isCreateOpen = ref(false);
-const isEditOpen = ref(false);
-const isShowOpen = ref(false);
-const isImportOpen = ref(false);
-type RoleRow = {
-    id: number | string;
-    name: string;
-    created_at?: string | null;
-    updated_at?: string | null;
-    permissions?: Array<{ id: number | string; name: string }>;
-};
+const tableLoading = ref(false);
 
-const selectedRole = ref<RoleRow | null>(null);
+const {
+    isCreateOpen,
+    isEditOpen,
+    isShowOpen,
+    isImportOpen,
+    selectedItem,
+    openCreate,
+    openImport,
+    closeCreate,
+    closeEdit,
+    closeShow,
+    closeImport,
+    handleRowAction,
+} = useCrudTable<RoleRow>({
+    onCreateOpen: () => createForm.reset(),
+    onImportOpen: () => importForm.reset(),
+    onEditOpen: (item) => {
+        editForm.id = String(item.id);
+        editForm.name = String(item.name);
+        editForm.created_at = item.created_at ?? null;
+        editForm.updated_at = item.updated_at ?? null;
+        editForm.permissions = item.permissions?.map((p) => Number(p.id)) || [];
+    },
+    onDelete: ({ id }) => {
+        tableLoading.value = true;
+        router.visit(destroyRole(Number(id)).url, {
+            method: 'delete',
+            onFinish: () => {
+                tableLoading.value = false;
+            },
+        });
+    },
+});
+
+const selectedRole = computed(() => selectedItem.value);
+
+const onRowAction = (payload: { key: string; id: number | string; item: Record<string, unknown> }) => {
+    handleRowAction({
+        key: payload.key,
+        id: payload.id,
+        item: payload.item as RoleRow,
+    });
+};
 
 // Forms
 const createForm = useForm('post', storeRole().url, {
     name: '',
-    permissions: [] as (number | string)[],
+    permissions: [] as number[],
 });
 
 const editForm = useForm('patch', '', {
@@ -112,43 +153,6 @@ const importForm = useForm('post', importRolesForm().url, {
     file: null as File | null,
 });
 
-// Actions
-const onRowAction = ({ key, id }: { key: string; id: number | string }) => {
-    const role = props.roles.data.find((r: Record<string, unknown>) => Number(r.id as number) === Number(id)) as RoleRow | undefined;
-
-    if (!role) return;
-
-    if (key === 'show') {
-        selectedRole.value = role;
-        isShowOpen.value = true;
-        return;
-    }
-    if (key === 'edit') {
-        selectedRole.value = role;
-        editForm.id = String(role.id);
-        editForm.name = String(role.name);
-        editForm.created_at = role.created_at ?? null;
-        editForm.updated_at = role.updated_at ?? null;
-        editForm.permissions = role.permissions?.map((p) => Number(p.id)) || [];
-        isEditOpen.value = true;
-        return;
-    }
-    if (key === 'delete') {
-        router.visit(destroyRole(Number(id)).url, { method: 'delete' });
-        return;
-    }
-};
-
-const goCreate = () => {
-    createForm.reset();
-    isCreateOpen.value = true;
-};
-
-const goImport = () => {
-    importForm.reset();
-    isImportOpen.value = true;
-};
-
 const downloadExport = () => {
     const link = document.createElement('a');
     link.href = exportRoles().url;
@@ -159,11 +163,19 @@ const downloadExport = () => {
 };
 
 const onChangePage = (p: number) => {
-    router.get(rolesIndex.url({ mergeQuery: { page: p } }), {
-        preserveScroll: true,
-        preserveState: true,
-        replace: true,
-    });
+    tableLoading.value = true;
+    router.get(
+        rolesIndex.url({ mergeQuery: { page: p } }),
+        {},
+        {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+            onFinish: () => {
+                tableLoading.value = false;
+            },
+        },
+    );
 };
 
 // Form submissions
@@ -172,7 +184,7 @@ const submitCreate = () => {
         preserveScroll: true,
         preserveState: true,
         onSuccess: () => {
-            isCreateOpen.value = false;
+            closeCreate();
             createForm.reset();
         },
     });
@@ -183,28 +195,30 @@ const submitEdit = () => {
         preserveScroll: true,
         preserveState: true,
         onSuccess: () => {
-            isEditOpen.value = false;
+            closeEdit();
+            selectedItem.value = null;
             editForm.reset();
         },
     });
 };
 
 const toggleCreatePermission = (permissionId: number | string) => {
-    const index = createForm.permissions.indexOf(permissionId);
+    const id = Number(permissionId);
+    const index = createForm.permissions.indexOf(id);
     if (index > -1) {
         createForm.permissions.splice(index, 1);
     } else {
-        createForm.permissions.push(permissionId);
+        createForm.permissions.push(id);
     }
 };
 
 const toggleEditPermission = (permissionId: number | string) => {
-    const numericId = Number(permissionId);
-    const index = editForm.permissions.indexOf(numericId);
+    const id = Number(permissionId);
+    const index = editForm.permissions.indexOf(id);
     if (index > -1) {
         editForm.permissions.splice(index, 1);
     } else {
-        editForm.permissions.push(numericId);
+        editForm.permissions.push(id);
     }
 };
 
@@ -221,7 +235,7 @@ const submitImport = () => {
         preserveScroll: true,
         preserveState: true,
         onSuccess: () => {
-            isImportOpen.value = false;
+            closeImport();
             importForm.reset();
         },
     });
@@ -239,16 +253,15 @@ useFlashWatcher();
                 :description="breadcrumbs[0].description"
                 :actions="headerActions"
                 resource="roles"
-                @create="goCreate"
+                @create="openCreate"
                 @export="downloadExport"
-                @import="goImport" />
+                @import="openImport" />
 
             <DataTable
                 :columns="columns"
-                :items="props.roles.data"
-                :items-per-page="props.roles.per_page || 10"
-                :total="props.roles.total || 0"
-                :current-page="props.roles.current_page || 1"
+                :pagination="props.roles"
+                :loading="tableLoading"
+                empty-state="No roles found."
                 row-key="id"
                 actions-label="Action"
                 :row-actions="rowActions"
@@ -285,7 +298,7 @@ useFlashWatcher();
                         <InputError :message="createForm.errors.permissions" />
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" @click="isCreateOpen = false">Cancel</Button>
+                        <Button type="button" variant="outline" @click="closeCreate()">Cancel</Button>
                         <Button type="submit" :disabled="createForm.processing" class="cursor-pointer">Create</Button>
                     </DialogFooter>
                 </form>
@@ -333,7 +346,7 @@ useFlashWatcher();
                         <InputError :message="editForm.errors.permissions" />
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" @click="isEditOpen = false">Cancel</Button>
+                        <Button type="button" variant="outline" @click="closeEdit()">Cancel</Button>
                         <Button type="submit" :disabled="editForm.processing" class="cursor-pointer">Update</Button>
                     </DialogFooter>
                 </form>
@@ -380,7 +393,7 @@ useFlashWatcher();
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button type="button" variant="outline" @click="isShowOpen = false">Close</Button>
+                    <Button type="button" variant="outline" @click="closeShow()">Close</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -399,7 +412,7 @@ useFlashWatcher();
                         <InputError :message="importForm.errors.file" />
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" @click="isImportOpen = false">Cancel</Button>
+                        <Button type="button" variant="outline" @click="closeImport()">Cancel</Button>
                         <Button type="submit" :disabled="importForm.processing" class="cursor-pointer">Import</Button>
                     </DialogFooter>
                 </form>

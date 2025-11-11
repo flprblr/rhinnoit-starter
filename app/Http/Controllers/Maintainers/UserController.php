@@ -10,6 +10,7 @@ use App\Http\Requests\Maintainers\Users\UpdateUserRequest;
 use App\Imports\UsersImport;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\Inertia\PaginatorResource;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,18 +34,20 @@ class UserController extends Controller
      */
     public function index(Request $request): Response
     {
+        $perPage = max(1, min(100, $request->integer('per_page', 10)));
+
         $users = User::select(['id', 'name', 'email', 'created_at', 'updated_at'])
             ->with('roles:id,name')
             ->when($this->getCleanSearchTerm($request), function ($query) use ($request) {
                 $this->applySearch($query, $request, ['name', 'email']);
             })
-            ->paginate(10)
+            ->paginate($perPage)
             ->withQueryString();
 
         $roles = Role::select(['id', 'name'])->orderBy('id', 'asc')->get();
 
         return Inertia::render('maintainers/users/Index', [
-            'users' => $users,
+            'users' => PaginatorResource::make($users),
             'roles' => $roles,
             'filters' => $request->only(['search']),
         ]);

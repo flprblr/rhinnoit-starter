@@ -13,7 +13,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { RowAction, TableColumn } from '@/types';
 
 defineOptions({ name: 'DataTable' });
@@ -21,21 +22,21 @@ defineOptions({ name: 'DataTable' });
 const props = withDefaults(
     defineProps<{
         columns: TableColumn<Record<string, unknown>>[];
-        items: Record<string, unknown>[];
-        itemsPerPage?: number;
-        total?: number;
-        currentPage?: number;
+        pagination: PaginatedCollection<Record<string, unknown>>;
         rowKey?: string;
         actionsLabel?: string;
         showActions?: boolean;
         rowActions?: RowAction[];
+        loading?: boolean;
+        emptyState?: string;
+        cellClass?: string;
     }>(),
     {
-        itemsPerPage: 10,
-        total: 0,
-        currentPage: 1,
         rowKey: 'id',
         showActions: true,
+        loading: false,
+        emptyState: 'No entries found.',
+        cellClass: 'whitespace-nowrap',
     },
 );
 
@@ -90,20 +91,45 @@ const cancelAction = () => {
     pendingAction.value = null;
 };
 
+const rows = computed(() => props.pagination?.data ?? []);
+
+const paginationMeta = computed(() => {
+    const meta = props.pagination?.meta;
+    if (!meta) {
+        return {
+            current_page: 1,
+            from: 0,
+            last_page: 1,
+            per_page: rows.value.length || 1,
+            to: 0,
+            total: 0,
+        };
+    }
+    return meta;
+});
+
 const paginationLabel = computed(() => {
-    const total = props.total ?? 0;
-    if (!total) {
+    if (!paginationMeta.value.total) {
         return 'Showing 0 entries';
     }
-    const base = Math.max(props.currentPage - 1, 0) * props.itemsPerPage + 1;
-    const from = Math.min(base, total);
-    const count = props.items.length;
-    const to = count ? Math.min(from + count - 1, total) : from;
-    return `Showing ${from} to ${to} of ${total} entries`;
+    const from = paginationMeta.value.from ?? 0;
+    const to = paginationMeta.value.to ?? 0;
+    return `Showing ${from} to ${to} of ${paginationMeta.value.total} entries`;
 });
+
+const totalColumns = computed(() => {
+    const hasActions = props.showActions && ((props.rowActions && props.rowActions.length) || props.actionsLabel);
+    return props.columns.length + (hasActions ? 1 : 0);
+});
+
+const isLoading = computed(() => props.loading);
+const hasRows = computed(() => rows.value.length > 0);
+const showSkeleton = computed(() => isLoading.value && !hasRows.value);
+const showEmpty = computed(() => !isLoading.value && !hasRows.value);
 
 defineSlots<{
     actions(props: { item: Record<string, unknown> }): unknown;
+    empty?(): unknown;
 }>();
 </script>
 
@@ -112,8 +138,8 @@ defineSlots<{
         <div class="overflow-x-auto">
             <Table>
                 <TableHeader>
-                    <TableRow class="h-10">
-                        <TableHead v-for="col in props.columns" :key="String(col.field)" :class="[col.class, 'px-3 py-2 whitespace-nowrap']">
+                    <TableRow>
+                        <TableHead v-for="col in props.columns" :key="String(col.field)" :class="col.class">
                             {{ col.label }}
                         </TableHead>
                         <TableHead
@@ -124,31 +150,49 @@ defineSlots<{
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    <TableRow v-for="item in props.items" :key="(item as any)[props.rowKey]" class="h-10">
-                        <TableCell v-for="col in props.columns" :key="String(col.field)" :class="[col.class, 'px-3 py-2 whitespace-nowrap']">
-                            {{ col.formatter ? col.formatter(getCellValue(item, col.field as any), item) : getCellValue(item, col.field as any) }}
-                        </TableCell>
-                        <TableCell
-                            v-if="props.showActions && props.rowActions && props.rowActions.length"
-                            class="px-3 py-2 text-right whitespace-nowrap">
-                            <div class="flex items-center justify-end gap-3">
-                                <Button
-                                    v-for="(action, idx) in props.rowActions"
-                                    :key="`${String((item as any)[props.rowKey])}-${idx}`"
-                                    variant="outline"
-                                    size="sm"
-                                    class="cursor-pointer"
-                                    v-can="action.can as any"
-                                    @click="handleActionClick(action, item)">
-                                    <component v-if="action.icon" :is="action.icon" class="mr-1 h-4 w-4" />
-                                    {{ action.label }}
-                                </Button>
-                            </div>
-                        </TableCell>
-                        <TableCell v-else-if="props.showActions && props.actionsLabel" class="px-3 py-2 text-right whitespace-nowrap">
-                            <slot name="actions" :item="item" />
-                        </TableCell>
-                    </TableRow>
+                    <template v-if="showSkeleton">
+                        <TableRow v-for="n in 3" :key="`skeleton-${n}`">
+                            <TableCell :colspan="totalColumns">
+                                <Skeleton class="h-4 w-full" />
+                            </TableCell>
+                        </TableRow>
+                    </template>
+                    <template v-else-if="hasRows">
+                        <TableRow
+                            v-for="item in rows"
+                            :key="(item as any)[props.rowKey]"
+                            class="transition-opacity"
+                            :class="isLoading ? 'pointer-events-none opacity-60' : ''">
+                            <TableCell v-for="col in props.columns" :key="String(col.field)" :class="[props.cellClass, col.class]">
+                                {{ col.formatter ? col.formatter(getCellValue(item, col.field as any), item) : getCellValue(item, col.field as any) }}
+                            </TableCell>
+                            <TableCell v-if="props.showActions && props.rowActions && props.rowActions.length" class="text-right">
+                                <div class="flex items-center justify-end gap-3">
+                                    <Button
+                                        v-for="(action, idx) in props.rowActions"
+                                        :key="`${String((item as any)[props.rowKey])}-${idx}`"
+                                        variant="outline"
+                                        size="sm"
+                                        class="cursor-pointer"
+                                        v-can="action.can as any"
+                                        @click="handleActionClick(action, item)">
+                                        <component v-if="action.icon" :is="action.icon" class="mr-1 h-4 w-4" />
+                                        {{ action.label }}
+                                    </Button>
+                                </div>
+                            </TableCell>
+                            <TableCell v-else-if="props.showActions && props.actionsLabel">
+                                <slot name="actions" :item="item" />
+                            </TableCell>
+                        </TableRow>
+                    </template>
+                    <template v-else-if="showEmpty">
+                        <TableEmpty :colspan="totalColumns">
+                            <slot name="empty">
+                                <span class="text-sm text-muted-foreground">{{ props.emptyState }}</span>
+                            </slot>
+                        </TableEmpty>
+                    </template>
                 </TableBody>
             </Table>
         </div>
@@ -160,20 +204,18 @@ defineSlots<{
             <div class="text-center md:text-right">
                 <Pagination
                     v-slot="{ page }"
-                    :items-per-page="props.itemsPerPage"
-                    :total="props.total"
-                    :default-page="props.currentPage"
+                    :items-per-page="paginationMeta.per_page"
+                    :total="paginationMeta.total"
+                    :default-page="paginationMeta.current_page"
                     @update:page="(p) => emit('update:page', p)">
                     <PaginationContent v-slot="{ items }">
                         <PaginationPrevious />
-
                         <template v-for="(item, index) in items" :key="index">
                             <PaginationItem v-if="item.type === 'page'" :value="item.value" :is-active="item.value === page">
                                 {{ item.value }}
                             </PaginationItem>
                             <PaginationEllipsis v-else-if="item.type === 'ellipsis'" :index="index" />
                         </template>
-
                         <PaginationNext />
                     </PaginationContent>
                 </Pagination>

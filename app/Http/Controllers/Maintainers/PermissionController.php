@@ -9,6 +9,7 @@ use App\Http\Requests\Maintainers\Permissions\StorePermissionRequest;
 use App\Http\Requests\Maintainers\Permissions\UpdatePermissionRequest;
 use App\Imports\PermissionsImport;
 use App\Models\Permission;
+use App\Support\Inertia\PaginatorResource;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,15 +32,17 @@ class PermissionController extends Controller
      */
     public function index(Request $request): Response
     {
+        $perPage = max(1, min(100, $request->integer('per_page', 10)));
+
         $permissions = Permission::select(['id', 'name', 'created_at', 'updated_at'])
             ->when($this->getCleanSearchTerm($request), function ($query) use ($request) {
                 $this->applySearch($query, $request, ['name']);
             })
-            ->paginate(10)
+            ->paginate($perPage)
             ->withQueryString();
 
         return Inertia::render('maintainers/permissions/Index', [
-            'permissions' => $permissions,
+            'permissions' => PaginatorResource::make($permissions),
             'filters' => $request->only(['search']),
         ]);
     }

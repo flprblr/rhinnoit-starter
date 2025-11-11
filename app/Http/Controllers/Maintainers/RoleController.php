@@ -10,6 +10,7 @@ use App\Http\Requests\Maintainers\Roles\UpdateRoleRequest;
 use App\Imports\RolesImport;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Support\Inertia\PaginatorResource;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,18 +33,20 @@ class RoleController extends Controller
      */
     public function index(Request $request): Response
     {
+        $perPage = max(1, min(100, $request->integer('per_page', 10)));
+
         $roles = Role::select(['id', 'name', 'created_at', 'updated_at'])
             ->with('permissions:id,name')
             ->when($this->getCleanSearchTerm($request), function ($query) use ($request) {
                 $this->applySearch($query, $request, ['name']);
             })
-            ->paginate(10)
+            ->paginate($perPage)
             ->withQueryString();
 
         $permissions = Permission::select(['id', 'name'])->orderBy('id', 'asc')->get();
 
         return Inertia::render('maintainers/roles/Index', [
-            'roles' => $roles,
+            'roles' => PaginatorResource::make($roles),
             'permissions' => $permissions,
             'filters' => $request->only(['search']),
         ]);

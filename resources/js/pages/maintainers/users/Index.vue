@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import { Head, router } from '@inertiajs/vue3';
 
@@ -15,6 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useCrudTable } from '@/composables/useCrudTable';
 import { useFlashWatcher } from '@/composables/useFlashWatcher';
 import AppLayout from '@/layouts/AppLayout.vue';
 import {
@@ -32,8 +33,17 @@ interface Role {
     name: string;
 }
 
+type UserRow = {
+    id: number | string;
+    name: string;
+    email: string;
+    created_at?: string | null;
+    updated_at?: string | null;
+    roles?: Array<{ id: number | string; name: string }>;
+};
+
 const props = defineProps<{
-    users: TablePaginator;
+    users: PaginatedCollection<UserRow>;
     roles: Role[];
 }>();
 
@@ -81,27 +91,60 @@ const rowActions: RowAction[] = [
 ];
 
 // Dialog states
-const isCreateOpen = ref(false);
-const isEditOpen = ref(false);
-const isShowOpen = ref(false);
-const isImportOpen = ref(false);
-type UserRow = {
-    id: number | string;
-    name: string;
-    email: string;
-    created_at?: string | null;
-    updated_at?: string | null;
-    roles?: Array<{ id: number | string; name: string }>;
-};
+const tableLoading = ref(false);
 
-const selectedUser = ref<UserRow | null>(null);
+const {
+    isCreateOpen,
+    isEditOpen,
+    isShowOpen,
+    isImportOpen,
+    selectedItem,
+    openCreate,
+    openImport,
+    closeCreate,
+    closeEdit,
+    closeShow,
+    closeImport,
+    handleRowAction,
+} = useCrudTable<UserRow>({
+    onCreateOpen: () => createForm.reset(),
+    onImportOpen: () => importForm.reset(),
+    onEditOpen: (item) => {
+        editForm.id = String(item.id);
+        editForm.name = item.name;
+        editForm.email = String(item.email);
+        editForm.password = '';
+        editForm.created_at = item.created_at ?? null;
+        editForm.updated_at = item.updated_at ?? null;
+        editForm.roles = item.roles?.map((r) => Number(r.id)) || [];
+    },
+    onDelete: ({ id }) => {
+        tableLoading.value = true;
+        router.visit(destroyUser(Number(id)).url, {
+            method: 'delete',
+            onFinish: () => {
+                tableLoading.value = false;
+            },
+        });
+    },
+});
+
+const selectedUser = computed(() => selectedItem.value);
+
+const onRowAction = (payload: { key: string; id: number | string; item: Record<string, unknown> }) => {
+    handleRowAction({
+        key: payload.key,
+        id: payload.id,
+        item: payload.item as UserRow,
+    });
+};
 
 // Forms
 const createForm = useForm('post', storeUser().url, {
     name: '',
     email: '',
     password: '',
-    roles: [] as (number | string)[],
+    roles: [] as number[],
 });
 
 const editForm = useForm('patch', '', {
@@ -118,45 +161,6 @@ const importForm = useForm('post', importUsersForm().url, {
     file: null as File | null,
 });
 
-// Actions
-const onRowAction = ({ key, id }: { key: string; id: number | string }) => {
-    const user = props.users.data.find((u: Record<string, unknown>) => Number(u.id as number) === Number(id)) as UserRow | undefined;
-
-    if (!user) return;
-
-    if (key === 'show') {
-        selectedUser.value = user;
-        isShowOpen.value = true;
-        return;
-    }
-    if (key === 'edit') {
-        selectedUser.value = user;
-        editForm.id = String(user.id);
-        editForm.name = user.name;
-        editForm.email = String(user.email);
-        editForm.password = '';
-        editForm.created_at = user.created_at ?? null;
-        editForm.updated_at = user.updated_at ?? null;
-        editForm.roles = user.roles?.map((r) => Number(r.id)) || [];
-        isEditOpen.value = true;
-        return;
-    }
-    if (key === 'delete') {
-        router.visit(destroyUser(Number(id)).url, { method: 'delete' });
-        return;
-    }
-};
-
-const goCreate = () => {
-    createForm.reset();
-    isCreateOpen.value = true;
-};
-
-const goImport = () => {
-    importForm.reset();
-    isImportOpen.value = true;
-};
-
 const downloadExport = () => {
     const link = document.createElement('a');
     link.href = exportUsers().url;
@@ -167,11 +171,19 @@ const downloadExport = () => {
 };
 
 const onChangePage = (p: number) => {
-    router.get(usersIndex.url({ mergeQuery: { page: p } }), {
-        preserveScroll: true,
-        preserveState: true,
-        replace: true,
-    });
+    tableLoading.value = true;
+    router.get(
+        usersIndex.url({ mergeQuery: { page: p } }),
+        {},
+        {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+            onFinish: () => {
+                tableLoading.value = false;
+            },
+        },
+    );
 };
 
 // Form submissions
@@ -180,7 +192,7 @@ const submitCreate = () => {
         preserveScroll: true,
         preserveState: true,
         onSuccess: () => {
-            isCreateOpen.value = false;
+            closeCreate();
             createForm.reset();
         },
     });
@@ -191,18 +203,20 @@ const submitEdit = () => {
         preserveScroll: true,
         preserveState: true,
         onSuccess: () => {
-            isEditOpen.value = false;
+            closeEdit();
+            selectedItem.value = null;
             editForm.reset();
         },
     });
 };
 
 const toggleCreateRole = (roleId: number | string) => {
-    const index = createForm.roles.indexOf(roleId);
+    const id = Number(roleId);
+    const index = createForm.roles.indexOf(id);
     if (index > -1) {
         createForm.roles.splice(index, 1);
     } else {
-        createForm.roles.push(roleId);
+        createForm.roles.push(id);
     }
 };
 
@@ -229,7 +243,7 @@ const submitImport = () => {
         preserveScroll: true,
         preserveState: true,
         onSuccess: () => {
-            isImportOpen.value = false;
+            closeImport();
             importForm.reset();
         },
     });
@@ -247,16 +261,15 @@ useFlashWatcher();
                 :description="breadcrumbs[0].description"
                 :actions="headerActions"
                 resource="users"
-                @create="goCreate"
+                @create="openCreate"
                 @export="downloadExport"
-                @import="goImport" />
+                @import="openImport" />
 
             <DataTable
                 :columns="columns"
-                :items="props.users.data"
-                :items-per-page="props.users.per_page || 10"
-                :total="props.users.total || 0"
-                :current-page="props.users.current_page || 1"
+                :pagination="props.users"
+                :loading="tableLoading"
+                empty-state="No users found."
                 row-key="id"
                 actions-label="Action"
                 :row-actions="rowActions"
@@ -315,7 +328,7 @@ useFlashWatcher();
                         <InputError :message="createForm.errors.roles" />
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" @click="isCreateOpen = false">Cancel</Button>
+                        <Button type="button" variant="outline" @click="closeCreate()">Cancel</Button>
                         <Button type="submit" :disabled="createForm.processing" class="cursor-pointer">Create</Button>
                     </DialogFooter>
                 </form>
@@ -386,7 +399,7 @@ useFlashWatcher();
                         <InputError :message="editForm.errors.roles" />
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" @click="isEditOpen = false">Cancel</Button>
+                        <Button type="button" variant="outline" @click="closeEdit()">Cancel</Button>
                         <Button type="submit" :disabled="editForm.processing" class="cursor-pointer">Update</Button>
                     </DialogFooter>
                 </form>
@@ -437,7 +450,7 @@ useFlashWatcher();
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button type="button" variant="outline" @click="isShowOpen = false">Close</Button>
+                    <Button type="button" variant="outline" @click="closeShow()">Close</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -456,7 +469,7 @@ useFlashWatcher();
                         <InputError :message="importForm.errors.file" />
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" @click="isImportOpen = false">Cancel</Button>
+                        <Button type="button" variant="outline" @click="closeImport()">Cancel</Button>
                         <Button type="submit" :disabled="importForm.processing" class="cursor-pointer">Import</Button>
                     </DialogFooter>
                 </form>
