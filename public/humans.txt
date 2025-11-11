@@ -1,0 +1,23 @@
+# humans.txt
+# Human-readable information about the website
+
+# TEAM
+
+Developer: Your Name
+Contact: your.email@example.com
+Twitter: @yourusername
+Location: City, Country
+
+# THANKS
+
+Server: Laravel
+Framework: Laravel
+Frontend: Vue.js, Inertia.js
+CSS: Tailwind CSS
+
+# SITE
+
+Last update: 2025/01/01
+Standards: HTML5, CSS3, JavaScript ES6+
+Components: shadcn-vue
+IDE: Cursor

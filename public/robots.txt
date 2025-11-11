@@ -1,2 +1,25 @@
+# robots.txt
+# Laravel application robots configuration
+# Private application - most content requires authentication
+
 User-agent: *
-Disallow:
+# Block all by default (private application)
+Disallow: /
+
+# Allow only public pages (uncomment and add your public routes)
+# Allow: /login
+# Allow: /register
+# Allow: /password/reset
+# Allow: /verify-email
+
+# Always block internal directories
+Disallow: /storage/
+Disallow: /build/
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /maintainers/
+Disallow: /_debugbar/
+Disallow: /telescope/
+Disallow: /horizon/

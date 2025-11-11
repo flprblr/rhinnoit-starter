@@ -1,0 +1,19 @@
+# security.txt
+# RFC 9116 - Security Policy File
+
+# Contact information for security issues
+Contact: mailto:security@example.com
+Expires: 2026-12-31T23:59:59.000Z
+
+# Preferred languages for security reports
+Preferred-Languages: en, es
+
+# Policy URL (optional)
+# Policy: https://example.com/security-policy
+
+# Hiring information (optional)
+# Hiring: https://example.com/jobs
+
+# Acknowledgments (optional)
+# Acknowledgments: https://example.com/security-hall-of-fame
+
