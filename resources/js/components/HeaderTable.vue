@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 
 import { Download, Plus, Upload } from 'lucide-vue-next';
+import { Separator } from '@/components/ui/separator'
 
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import { Button } from '@/components/ui/button';
@@ -98,4 +99,5 @@ const resolvedActions = computed<HeaderActionDefinition[]>(() => {
       </slot>
     </div>
   </div>
+  <Separator />
 </template>

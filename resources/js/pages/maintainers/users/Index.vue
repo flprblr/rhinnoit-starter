@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import { Head, router } from '@inertiajs/vue3';
 
@@ -45,6 +45,9 @@ type UserRow = {
 const props = defineProps<{
     users: PaginatedCollection<UserRow>;
     roles: Role[];
+    filters?: {
+        search?: string | null;
+    };
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -92,6 +95,19 @@ const rowActions: RowAction[] = [
 
 // Dialog states
 const tableLoading = ref(false);
+
+const searchTerm = ref(props.filters?.search ?? '');
+
+watch(
+    () => props.filters?.search ?? '',
+    (value) => {
+        if (value !== searchTerm.value) {
+            searchTerm.value = value;
+        }
+    },
+);
+
+const currentPerPage = computed(() => props.users.meta?.per_page ?? 10);
 
 const {
     isCreateOpen,
@@ -173,7 +189,13 @@ const downloadExport = () => {
 const onChangePage = (p: number) => {
     tableLoading.value = true;
     router.get(
-        usersIndex.url({ mergeQuery: { page: p } }),
+        usersIndex.url({
+            mergeQuery: {
+                page: p,
+                per_page: currentPerPage.value,
+                search: searchTerm.value || undefined,
+            },
+        }),
         {},
         {
             preserveScroll: true,
@@ -189,7 +211,36 @@ const onChangePage = (p: number) => {
 const onChangePerPage = (perPage: number) => {
     tableLoading.value = true;
     router.get(
-        usersIndex.url({ mergeQuery: { page: 1, per_page: perPage } }),
+        usersIndex.url({
+            mergeQuery: {
+                page: 1,
+                per_page: perPage,
+                search: searchTerm.value || undefined,
+            },
+        }),
+        {},
+        {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+            onFinish: () => {
+                tableLoading.value = false;
+            },
+        },
+    );
+};
+
+const onSearchChange = (value: string) => {
+    searchTerm.value = value;
+    tableLoading.value = true;
+    router.get(
+        usersIndex.url({
+            mergeQuery: {
+                page: 1,
+                per_page: currentPerPage.value,
+                search: value || undefined,
+            },
+        }),
         {},
         {
             preserveScroll: true,
@@ -289,9 +340,11 @@ useFlashWatcher();
                 row-key="id"
                 actions-label="Action"
                 :row-actions="rowActions"
+                :search="searchTerm"
                 @row:action="onRowAction"
                 @update:page="onChangePage"
-                @update:perPage="onChangePerPage" />
+                @update:perPage="onChangePerPage"
+                @update:search="onSearchChange" />
         </div>
 
         <!-- Create Dialog -->

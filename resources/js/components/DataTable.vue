@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import type { AcceptableValue } from 'reka-ui';
 
@@ -36,6 +36,8 @@ const props = withDefaults(
         cellClass?: string;
         perPageOptions?: number[];
         perPageLabel?: string;
+        search?: string;
+        searchPlaceholder?: string;
     }>(),
     {
         rowKey: 'id',
@@ -49,6 +51,7 @@ const props = withDefaults(
 const emit = defineEmits<{
     (e: 'update:page', value: number): void;
     (e: 'update:perPage', value: number): void;
+    (e: 'update:search', value: string): void;
     (
         e: 'row:action',
         payload: {
@@ -138,7 +141,7 @@ const totalColumns = computed(() => {
     return props.columns.length + (hasActions ? 1 : 0);
 });
 
-const perPageLabel = computed(() => props.perPageLabel ?? 'rows per page');
+const perPageLabel = computed(() => props.perPageLabel ?? 'Rows per page');
 
 const perPageOptions = computed<number[]>(() => {
     const options = props.perPageOptions && props.perPageOptions.length ? props.perPageOptions : [10, 25, 50, 100];
@@ -159,6 +162,27 @@ const handlePerPageChange = (value: AcceptableValue) => {
     }
 };
 
+const searchPlaceholder = computed(() => props.searchPlaceholder ?? 'Search...');
+
+const searchTerm = ref(props.search ?? '');
+
+watch(
+    () => props.search ?? '',
+    (value) => {
+        if (value !== searchTerm.value) {
+            searchTerm.value = value;
+        }
+    },
+);
+
+const handleSearchInput = (value: string | number) => {
+    const normalized = typeof value === 'number' ? String(value) : value;
+    if (normalized !== searchTerm.value) {
+        searchTerm.value = normalized;
+    }
+    emit('update:search', normalized);
+};
+
 const isLoading = computed(() => props.loading);
 const hasRows = computed(() => rows.value.length > 0);
 const showSkeleton = computed(() => isLoading.value && !hasRows.value);
@@ -174,7 +198,7 @@ defineSlots<{
     <div class="space-y-3">
         <div class="flex flex-col items-center gap-4 md:flex-row md:items-center md:justify-between">
             <div class="text-center md:text-left">
-                <Input type="search" placeholder="Search..." />
+                <Input type="text" :placeholder="searchPlaceholder" :model-value="searchTerm" @update:model-value="handleSearchInput" />
             </div>
             <div class="flex items-center justify-center gap-2 md:justify-end">
                 <Select :model-value="String(currentPerPage)" @update:modelValue="handlePerPageChange">
