@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 
+import type { AcceptableValue } from 'reka-ui';
+
 import {
     AlertDialog,
     AlertDialogAction,
@@ -12,7 +14,9 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { RowAction, TableColumn } from '@/types';
@@ -30,6 +34,8 @@ const props = withDefaults(
         loading?: boolean;
         emptyState?: string;
         cellClass?: string;
+        perPageOptions?: number[];
+        perPageLabel?: string;
     }>(),
     {
         rowKey: 'id',
@@ -42,6 +48,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
     (e: 'update:page', value: number): void;
+    (e: 'update:perPage', value: number): void;
     (
         e: 'row:action',
         payload: {
@@ -131,6 +138,23 @@ const totalColumns = computed(() => {
     return props.columns.length + (hasActions ? 1 : 0);
 });
 
+const perPageOptions = computed<number[]>(() => {
+    const options = props.perPageOptions && props.perPageOptions.length ? props.perPageOptions : [5, 10, 25, 50, 100];
+    return Array.from(new Set(options.map((option) => Number(option)).filter((option) => option > 0))).sort((a, b) => a - b);
+});
+
+const currentPerPage = computed(() => paginationMeta.value.per_page ?? perPageOptions.value[0] ?? 10);
+
+const handlePerPageChange = (value: AcceptableValue) => {
+    if (value === null || typeof value === 'boolean') {
+        return;
+    }
+    const parsed = Number(value);
+    if (!Number.isNaN(parsed) && parsed > 0 && parsed !== currentPerPage.value) {
+        emit('update:perPage', parsed);
+    }
+};
+
 const isLoading = computed(() => props.loading);
 const hasRows = computed(() => rows.value.length > 0);
 const showSkeleton = computed(() => isLoading.value && !hasRows.value);
@@ -144,6 +168,27 @@ defineSlots<{
 
 <template>
     <div class="space-y-3">
+        <div class="flex flex-col items-center gap-4 md:flex-row md:items-center md:justify-between">
+            <div class="text-center md:text-left">
+                <Input type="search" placeholder="Search..." />
+            </div>
+            <div class="flex items-center justify-center gap-2 md:justify-end">
+                <Select :model-value="String(currentPerPage)" @update:modelValue="handlePerPageChange">
+                    <SelectTrigger class="w-16">
+                        <SelectValue :placeholder="perPageLabel" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectItem v-for="option in perPageOptions" :key="option" :value="String(option)">
+                                {{ option }}
+                            </SelectItem>
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+                <span class="text-sm text-muted-foreground">rows per page</span>
+            </div>
+        </div>
+
         <div class="overflow-x-auto">
             <Table>
                 <TableHeader>
@@ -207,7 +252,7 @@ defineSlots<{
         </div>
 
         <div class="flex flex-col items-center gap-4 md:flex-row md:items-center md:justify-between">
-            <div class="text-center text-sm text-muted-foreground">
+            <div class="text-center text-sm text-muted-foreground md:text-left">
                 {{ paginationLabel }}
             </div>
             <div class="text-center md:text-right">

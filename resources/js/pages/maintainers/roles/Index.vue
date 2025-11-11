@@ -178,6 +178,22 @@ const onChangePage = (p: number) => {
     );
 };
 
+const onChangePerPage = (perPage: number) => {
+    tableLoading.value = true;
+    router.get(
+        rolesIndex.url({ mergeQuery: { page: 1, per_page: perPage } }),
+        {},
+        {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+            onFinish: () => {
+                tableLoading.value = false;
+            },
+        },
+    );
+};
+
 // Form submissions
 const submitCreate = () => {
     createForm.post(storeRole().url, {
@@ -266,7 +282,8 @@ useFlashWatcher();
                 actions-label="Action"
                 :row-actions="rowActions"
                 @row:action="onRowAction"
-                @update:page="onChangePage" />
+                @update:page="onChangePage"
+                @update:perPage="onChangePerPage" />
         </div>
 
         <!-- Create Dialog -->
