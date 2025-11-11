@@ -16,6 +16,13 @@
         <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
         <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 
+        {{-- PWA / Mobile App Meta Tags --}}
+        <meta name="application-name" content="{{ config('app.name') }}">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="{{ config('app.name') }}">
+        <meta name="mobile-web-app-capable" content="yes">
+
         {{-- Open Graph / Facebook - Only for public pages (uncomment when needed) --}}
         {{-- Use WebP format (og-image.webp) with PNG fallback (og-image.png) --}}
         {{-- <meta property="og:type" content="website">
@@ -24,6 +31,7 @@
         <meta property="og:description" content="{{ config('app.description') }}">
         <meta property="og:image" content="{{ asset('img/seo/og-image.webp') }}">
         <meta property="og:image:secure_url" content="{{ asset('img/seo/og-image.webp') }}">
+        <meta property="og:image:type" content="image/webp">
         <meta property="og:image:width" content="1200">
         <meta property="og:image:height" content="630">
         <meta property="og:image:alt" content="{{ config('app.name') }}">
@@ -60,6 +68,10 @@
         <link rel="icon" href="{{ asset('img/favicon/favicon-16x16.png') }}" sizes="16x16" type="image/png">
         <link rel="apple-touch-icon" href="{{ asset('img/favicon/apple-touch-icon.png') }}">
         <link rel="manifest" href="{{ asset('img/favicon/site.webmanifest') }}">
+
+        {{-- Microsoft / Windows Meta Tags --}}
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-config" content="{{ asset('img/favicon/browserconfig.xml') }}">
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>
