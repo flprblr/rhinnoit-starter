@@ -24,6 +24,8 @@ npm run format
 
 # Prepare to Production
 
+**macOS/Linux:**
+
 ```bash
 composer clear-cache &&
 composer install --no-interaction --no-dev &&
@@ -34,6 +36,20 @@ npm run build &&
 rm -rf node_modules public/storage storage/logs/laravel.log &&
 cd .. &&
 zip -q -r laravel.zip laravel -x ".DS_Store" -x "__MACOSX"
+```
+
+**Windows:**
+
+```powershell
+composer clear-cache; `
+composer install --no-interaction --no-dev; `
+composer pint; `
+npm install; `
+npm run format; `
+npm run build; `
+Remove-Item -Recurse -Force node_modules, public\storage, storage\logs\laravel.log -ErrorAction SilentlyContinue; `
+cd ..; `
+Compress-Archive -Path laravel -DestinationPath laravel.zip -Force
 ```
 
 ## Production Deployment
