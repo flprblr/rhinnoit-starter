@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 
 import { Head, router } from '@inertiajs/vue3';
 
@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCrudTable } from '@/composables/useCrudTable';
 import { useFlashWatcher } from '@/composables/useFlashWatcher';
+import { useTableActions } from '@/composables/useTableActions';
 import AppLayout from '@/layouts/AppLayout.vue';
 import {
     destroy as destroyPermission,
@@ -104,18 +105,13 @@ const rowActions: RowAction[] = [
 
 const tableLoading = ref(false);
 
-const searchTerm = ref(props.filters?.search ?? '');
-
-watch(
-    () => props.filters?.search ?? '',
-    (value) => {
-        if (value !== searchTerm.value) {
-            searchTerm.value = value;
-        }
-    },
-);
-
-const currentPerPage = computed(() => props.permissions.meta?.per_page ?? 10);
+const { searchTerm, onChangePage, onChangePerPage, onSearchChange, downloadExport } = useTableActions({
+    indexRoute: permissionsIndex,
+    exportRoute: exportPermissions,
+    filters: props.filters,
+    pagination: props.permissions,
+    loading: tableLoading,
+});
 
 const {
     isCreateOpen,
@@ -135,7 +131,7 @@ const {
     onImportOpen: () => importForm.reset(),
     onEditOpen: (item) => {
         editForm.id = String(item.id);
-        editForm.name = String(item.name);
+        editForm.name = item.name;
         editForm.created_at = item.created_at ?? null;
         editForm.updated_at = item.updated_at ?? null;
     },
@@ -174,82 +170,6 @@ const editForm = useForm('patch', '', {
 const importForm = useForm('post', importPermissionsForm().url, {
     file: null as File | null,
 });
-
-const downloadExport = () => {
-    const link = document.createElement('a');
-    link.href = exportPermissions().url;
-    link.download = '';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-};
-
-const onChangePage = (p: number) => {
-    tableLoading.value = true;
-    router.get(
-        permissionsIndex.url({
-            mergeQuery: {
-                page: p,
-                per_page: currentPerPage.value,
-                search: searchTerm.value || undefined,
-            },
-        }),
-        {},
-        {
-            preserveScroll: true,
-            preserveState: true,
-            replace: true,
-            onFinish: () => {
-                tableLoading.value = false;
-            },
-        },
-    );
-};
-
-const onChangePerPage = (perPage: number) => {
-    tableLoading.value = true;
-    router.get(
-        permissionsIndex.url({
-            mergeQuery: {
-                page: 1,
-                per_page: perPage,
-                search: searchTerm.value || undefined,
-            },
-        }),
-        {},
-        {
-            preserveScroll: true,
-            preserveState: true,
-            replace: true,
-            onFinish: () => {
-                tableLoading.value = false;
-            },
-        },
-    );
-};
-
-const onSearchChange = (value: string) => {
-    searchTerm.value = value;
-    tableLoading.value = true;
-    router.get(
-        permissionsIndex.url({
-            mergeQuery: {
-                page: 1,
-                per_page: currentPerPage.value,
-                search: value || undefined,
-            },
-        }),
-        {},
-        {
-            preserveScroll: true,
-            preserveState: true,
-            replace: true,
-            onFinish: () => {
-                tableLoading.value = false;
-            },
-        },
-    );
-};
 
 const submitCreate = () => {
     createForm.post(storePermission().url, {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 
 import { Head, router } from '@inertiajs/vue3';
 
@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCrudTable } from '@/composables/useCrudTable';
 import { useFlashWatcher } from '@/composables/useFlashWatcher';
+import { useTableActions } from '@/composables/useTableActions';
 import AppLayout from '@/layouts/AppLayout.vue';
 import {
     destroy as destroyRole,
@@ -112,18 +113,13 @@ const rowActions: RowAction[] = [
 
 const tableLoading = ref(false);
 
-const searchTerm = ref(props.filters?.search ?? '');
-
-watch(
-    () => props.filters?.search ?? '',
-    (value) => {
-        if (value !== searchTerm.value) {
-            searchTerm.value = value;
-        }
-    },
-);
-
-const currentPerPage = computed(() => props.roles.meta?.per_page ?? 10);
+const { searchTerm, onChangePage, onChangePerPage, onSearchChange, downloadExport } = useTableActions({
+    indexRoute: rolesIndex,
+    exportRoute: exportRoles,
+    filters: props.filters,
+    pagination: props.roles,
+    loading: tableLoading,
+});
 
 const {
     isCreateOpen,
@@ -143,7 +139,7 @@ const {
     onImportOpen: () => importForm.reset(),
     onEditOpen: (item) => {
         editForm.id = String(item.id);
-        editForm.name = String(item.name);
+        editForm.name = item.name;
         editForm.created_at = item.created_at ?? null;
         editForm.updated_at = item.updated_at ?? null;
         editForm.permissions = item.permissions?.map((p) => Number(p.id)) || [];
@@ -185,82 +181,6 @@ const editForm = useForm('patch', '', {
 const importForm = useForm('post', importRolesForm().url, {
     file: null as File | null,
 });
-
-const downloadExport = () => {
-    const link = document.createElement('a');
-    link.href = exportRoles().url;
-    link.download = '';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-};
-
-const onChangePage = (p: number) => {
-    tableLoading.value = true;
-    router.get(
-        rolesIndex.url({
-            mergeQuery: {
-                page: p,
-                per_page: currentPerPage.value,
-                search: searchTerm.value || undefined,
-            },
-        }),
-        {},
-        {
-            preserveScroll: true,
-            preserveState: true,
-            replace: true,
-            onFinish: () => {
-                tableLoading.value = false;
-            },
-        },
-    );
-};
-
-const onChangePerPage = (perPage: number) => {
-    tableLoading.value = true;
-    router.get(
-        rolesIndex.url({
-            mergeQuery: {
-                page: 1,
-                per_page: perPage,
-                search: searchTerm.value || undefined,
-            },
-        }),
-        {},
-        {
-            preserveScroll: true,
-            preserveState: true,
-            replace: true,
-            onFinish: () => {
-                tableLoading.value = false;
-            },
-        },
-    );
-};
-
-const onSearchChange = (value: string) => {
-    searchTerm.value = value;
-    tableLoading.value = true;
-    router.get(
-        rolesIndex.url({
-            mergeQuery: {
-                page: 1,
-                per_page: currentPerPage.value,
-                search: value || undefined,
-            },
-        }),
-        {},
-        {
-            preserveScroll: true,
-            preserveState: true,
-            replace: true,
-            onFinish: () => {
-                tableLoading.value = false;
-            },
-        },
-    );
-};
 
 const submitCreate = () => {
     createForm.post(storeRole().url, {
@@ -469,7 +389,9 @@ useFlashWatcher();
                             <div v-for="permission in props.permissions" :key="permission.id" class="flex items-center space-x-2">
                                 <Checkbox
                                     :id="`show-permission-${permission.id}`"
-                                    :model-value="selectedRole.permissions?.some((p: any) => Number(p.id) === Number(permission.id))"
+                                    :model-value="
+                                        selectedRole.permissions?.some((p: { id: number | string }) => Number(p.id) === Number(permission.id))
+                                    "
                                     disabled />
                                 <Label :for="`show-permission-${permission.id}`" class="text-sm font-normal">
                                     {{ permission.name }}

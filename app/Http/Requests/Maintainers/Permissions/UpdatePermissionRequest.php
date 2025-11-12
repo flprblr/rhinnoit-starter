@@ -21,16 +21,10 @@ class UpdatePermissionRequest extends FormRequest
      */
     public function rules(): array
     {
-        $permission = $this->route('permission'); // viene del route model binding
+        $permission = $this->route('permission');
 
         return [
-            'name' => [
-                'required',
-                'string',
-                'min:3',
-                'max:255',
-                'unique:permissions,name,'.$permission?->id,
-            ],
+            'name' => ['required', 'string', 'min:3', 'max:255', 'unique:permissions,name,'.$permission?->id],
         ];
     }
 }

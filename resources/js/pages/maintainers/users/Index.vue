@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 
 import { Head, router } from '@inertiajs/vue3';
 
@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCrudTable } from '@/composables/useCrudTable';
 import { useFlashWatcher } from '@/composables/useFlashWatcher';
+import { useTableActions } from '@/composables/useTableActions';
 import AppLayout from '@/layouts/AppLayout.vue';
 import {
     destroy as destroyUser,
@@ -114,18 +115,13 @@ const rowActions: RowAction[] = [
 
 const tableLoading = ref(false);
 
-const searchTerm = ref(props.filters?.search ?? '');
-
-watch(
-    () => props.filters?.search ?? '',
-    (value) => {
-        if (value !== searchTerm.value) {
-            searchTerm.value = value;
-        }
-    },
-);
-
-const currentPerPage = computed(() => props.users.meta?.per_page ?? 10);
+const { searchTerm, onChangePage, onChangePerPage, onSearchChange, downloadExport } = useTableActions({
+    indexRoute: usersIndex,
+    exportRoute: exportUsers,
+    filters: props.filters,
+    pagination: props.users,
+    loading: tableLoading,
+});
 
 const {
     isCreateOpen,
@@ -146,7 +142,7 @@ const {
     onEditOpen: (item) => {
         editForm.id = String(item.id);
         editForm.name = item.name;
-        editForm.email = String(item.email);
+        editForm.email = item.email;
         editForm.password = '';
         editForm.created_at = item.created_at ?? null;
         editForm.updated_at = item.updated_at ?? null;
@@ -197,82 +193,6 @@ const editForm = useForm('patch', '', {
 const importForm = useForm('post', importUsersForm().url, {
     file: null as File | null,
 });
-
-const downloadExport = () => {
-    const link = document.createElement('a');
-    link.href = exportUsers().url;
-    link.download = '';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-};
-
-const onChangePage = (p: number) => {
-    tableLoading.value = true;
-    router.get(
-        usersIndex.url({
-            mergeQuery: {
-                page: p,
-                per_page: currentPerPage.value,
-                search: searchTerm.value || undefined,
-            },
-        }),
-        {},
-        {
-            preserveScroll: true,
-            preserveState: true,
-            replace: true,
-            onFinish: () => {
-                tableLoading.value = false;
-            },
-        },
-    );
-};
-
-const onChangePerPage = (perPage: number) => {
-    tableLoading.value = true;
-    router.get(
-        usersIndex.url({
-            mergeQuery: {
-                page: 1,
-                per_page: perPage,
-                search: searchTerm.value || undefined,
-            },
-        }),
-        {},
-        {
-            preserveScroll: true,
-            preserveState: true,
-            replace: true,
-            onFinish: () => {
-                tableLoading.value = false;
-            },
-        },
-    );
-};
-
-const onSearchChange = (value: string) => {
-    searchTerm.value = value;
-    tableLoading.value = true;
-    router.get(
-        usersIndex.url({
-            mergeQuery: {
-                page: 1,
-                per_page: currentPerPage.value,
-                search: value || undefined,
-            },
-        }),
-        {},
-        {
-            preserveScroll: true,
-            preserveState: true,
-            replace: true,
-            onFinish: () => {
-                tableLoading.value = false;
-            },
-        },
-    );
-};
 
 const submitCreate = () => {
     createForm.post(storeUser().url, {

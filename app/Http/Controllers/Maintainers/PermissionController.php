@@ -60,8 +60,10 @@ class PermissionController extends Controller
      */
     public function store(StorePermissionRequest $request): RedirectResponse
     {
+        $validated = $request->validated();
+
         Permission::create([
-            'name' => $request->validated()['name'],
+            'name' => $validated['name'],
             'guard_name' => 'web',
         ]);
 
@@ -103,8 +105,10 @@ class PermissionController extends Controller
      */
     public function update(UpdatePermissionRequest $request, Permission $permission): RedirectResponse
     {
+        $validated = $request->validated();
+
         $permission->update([
-            'name' => $request->validated()['name'],
+            'name' => $validated['name'],
         ]);
 
         return redirect()
